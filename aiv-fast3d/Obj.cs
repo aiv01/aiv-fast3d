@@ -13,13 +13,11 @@ namespace Aiv.Fast3D
 
         private List<Vector3> objVertices;
         private List<Vector2> objUVs;
-        private List<Vector3> objNormals;
 
         private Vector3 multiplier;
 
         private List<float> vList;
         private List<float> vtList;
-        private List<float> vnList;
 
         public Obj(string fileName) : this(fileName, Vector3.One)
         {
@@ -29,11 +27,9 @@ namespace Aiv.Fast3D
         {
             objVertices = new List<Vector3>();
             objUVs = new List<Vector2>();
-            objNormals = new List<Vector3>();
 
             vList = new List<float>();
             vtList = new List<float>();
-            vnList = new List<float>();
 
             this.multiplier = multiplier;
 
@@ -53,11 +49,6 @@ namespace Aiv.Fast3D
                     Vector2 vt = new Vector2(ParseFloat(items[1]), ParseFloat(items[2]));
                     objUVs.Add(vt);
                 }
-                else if (items[0] == "vn")
-                {
-                    Vector3 vn = new Vector3(ParseFloat(items[1]), ParseFloat(items[2]), ParseFloat(items[3]));
-                    objNormals.Add(vn);
-                }
                 else if (items[0] == "f")
                 {
                     AddFace(items);
@@ -66,9 +57,8 @@ namespace Aiv.Fast3D
 
             this.v = vList.ToArray();
             this.uv = vtList.ToArray();
-
             this.Update();
-            this.UpdateFloatBuffer(3, vnList.ToArray());
+
         }
 
         private float ParseFloat(string value)
@@ -87,11 +77,6 @@ namespace Aiv.Fast3D
             vtList.Add(vtItem.X);
             // by default textures are y-reversed
             vtList.Add(1f - vtItem.Y);
-
-            Vector3 vnItem = objNormals[int.Parse(indices[2]) - 1];
-            vnList.Add(vnItem.X);
-            vnList.Add(vnItem.Y);
-            vnList.Add(vnItem.Z);
         }
 
         private void AddFace(string[] items)
