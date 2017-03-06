@@ -87,6 +87,8 @@ namespace Aiv.Fast3D.Perspective.Example
 			Camera hudCamera = new Camera();
 			logo.Camera = hudCamera;
 
+			Mesh3 skySphere = ObjLoader.Load("Assets/SM_SkySphere.OBJ", Vector3.One)[0];
+
 			while (window.IsOpened)
 			{
 
@@ -123,6 +125,11 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				if (window.GetKey(KeyCode.Left))
 					camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
+
+				window.DisableCullFaces();
+				skySphere.Scale3 = new Vector3(100, 100, 100);
+				skySphere.DrawColor(new Vector4(1, 1, 1, 1));
+				window.CullBackFaces();
 
 				floor.DrawPhong(floorTexture, new Vector3(50, 50, 20), new Vector3(1, 1, 1), new Vector3(0.2f, 0.2f, 0.2f));
 

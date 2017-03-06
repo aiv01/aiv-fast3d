@@ -57,15 +57,23 @@ namespace Aiv.Fast3D
 				vList.Add(vItem.Y * multiplier.Y);
 				vList.Add(vItem.Z * multiplier.Z);
 
-				Vector2 vtItem = objUVs[int.Parse(indices[1]) - 1];
-				vtList.Add(vtItem.X);
-				// by default textures are y-reversed
-				vtList.Add(1f - vtItem.Y);
+				if (indices.Length > 1)
+				{
 
-				Vector3 vnItem = objNormals[int.Parse(indices[2]) - 1];
-				vnList.Add(vnItem.X);
-				vnList.Add(vnItem.Y);
-				vnList.Add(vnItem.Z);
+					Vector2 vtItem = objUVs[int.Parse(indices[1]) - 1];
+					vtList.Add(vtItem.X);
+					// by default textures are y-reversed
+					vtList.Add(1f - vtItem.Y);
+
+					if (indices.Length > 2)
+					{
+
+						Vector3 vnItem = objNormals[int.Parse(indices[2]) - 1];
+						vnList.Add(vnItem.X);
+						vnList.Add(vnItem.Y);
+						vnList.Add(vnItem.Z);
+					}
+				}
 			}
 		}
 
