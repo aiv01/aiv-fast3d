@@ -62,7 +62,7 @@ namespace Aiv.Fast3D
 				// by default textures are y-reversed
 				vtList.Add(1f - vtItem.Y);
 
-				Vector3 vnItem = objVertices[int.Parse(indices[2]) - 1];
+				Vector3 vnItem = objNormals[int.Parse(indices[2]) - 1];
 				vnList.Add(vnItem.X);
 				vnList.Add(vnItem.Y);
 				vnList.Add(vnItem.Z);

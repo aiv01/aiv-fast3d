@@ -46,6 +46,7 @@
     <Compile Include="ObjLoader.cs" />
     <Compile Include="PerspectiveCamera.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Cube.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />

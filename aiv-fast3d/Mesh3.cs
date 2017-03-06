@@ -20,7 +20,7 @@ uniform mat4 mv;
 
 uniform mat4 view;
 
-uniform vec4 directional_light;
+uniform vec3 light_position;
 
 uniform float use_gouraud;
 
@@ -38,15 +38,16 @@ void main(){
 		vertex_normal = vn;
 
 		if (use_gouraud > 0.0) {
-			// compute the light position in camera space
-			vec3 light_position = (view * directional_light).xyz;
-			// compute the normal in camera space
-			vec3 normal_for_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
 			// compute the vertex in camera space
-			vec3 vertex_position = (mv * vec4(vertex.xyz, 1.0)).xyz;
-			// get the direction from vertex to light
-			vec3 light_direction = normalize(light_position - vertex_position);
-			lambert = clamp(dot(normal_for_view, light_direction), 0.0, 1.0);
+			vec3 vertex_from_view = (mv * vec4(vertex.xyz, 1.0)).xyz;
+			// compute the light in camera space
+			vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
+			// compute the normal in camera space
+			vec3 normal_from_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
+			// get the light direction from the vertex
+			vec3 light_direction = normalize(light_from_view - vertex_from_view);
+			// get the lambert cosine
+			lambert = clamp(dot(normal_from_view, light_direction), 0.0, 1.0);
 		}
 }";
 		private static string simpleFragmentShader3 = @"
@@ -63,7 +64,7 @@ uniform sampler2D tex;
 
 uniform float use_gouraud;
 
-uniform vec4 ambient;
+uniform vec3 ambient;
 
 in vec2 uvout;
 in vec4 vertex_color;
@@ -284,11 +285,11 @@ void main(){
 
 		}
 
-		public void DrawGouraud(Vector4 color, Vector3 directionalLight, Vector3 directionalLightColor, Vector3 ambientColor)
+		public void DrawGouraud(Vector4 color, Vector3 light, Vector3 lightColor)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_gouraud", 1f);
-			this.shader.SetUniform("directional_light", directionalLight);
+			this.shader.SetUniform("light_position", light);
 			this.DrawColor(color.X, color.Y, color.Z, color.W);
 			this.shader.SetUniform("use_gouraud", 0f);
 		}
@@ -298,9 +299,13 @@ void main(){
 
 		}
 
-		public void DrawGouraud(Texture texture, Vector3 light, Vector3 lightColor, Vector3 ambientColor)
+		public void DrawGouraud(Texture texture, Vector3 light, Vector3 lightColor)
 		{
-
+			this.Bind();
+			this.shader.SetUniform("use_gouraud", 1f);
+			this.shader.SetUniform("light_position", light);
+			this.DrawTexture(texture);
+			this.shader.SetUniform("use_gouraud", 0f);
 		}
 
 		public void DrawPhong(Texture texture, Vector3 light, Vector3 lightColor, Vector3 ambientColor)
