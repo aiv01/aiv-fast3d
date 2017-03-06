@@ -17,7 +17,7 @@ namespace Aiv.Fast3D.Perspective.Example
 		static float MouseX(Window window)
 		{
 			float value = 0;
-			float newX = window.mouseX;
+			float newX = window.RawMouseX;
 			if (newX > oldX)
 				value = 1;
 			if (newX < oldX)
@@ -29,7 +29,7 @@ namespace Aiv.Fast3D.Perspective.Example
 		static float MouseY(Window window)
 		{
 			float value = 0;
-			float newY = window.mouseY;
+			float newY = window.RawMouseY;
 			if (newY > oldY)
 				value = 1;
 			if (newY < oldY)
@@ -42,17 +42,15 @@ namespace Aiv.Fast3D.Perspective.Example
 		static void Main(string[] args)
 		{
 			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 24, 4);
+			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
 			window.SetPerspective(60);
 			window.SetZNearZFar(0.01f, 1000);
 			window.EnableDepthTest();
 			window.CullBackFaces();
 
-			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 30), new Vector3(0, 0, 180f));
+			window.SetCursor(false);
 
-			Console.WriteLine(camera.EulerRotation3);
-			Console.WriteLine(camera.Forward);
-			Console.WriteLine(camera.Right);
-			Console.WriteLine(camera.Up);
+			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 30), new Vector3(0, 0, 180f));
 
 			Texture crate = new Texture("Assets/crate.jpg");
 
@@ -67,6 +65,10 @@ namespace Aiv.Fast3D.Perspective.Example
 			floor.Position3 = new Vector3(0, -1, 0);
 
 			Mesh3 stormTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
+
+			//stormTrooper.RegenerateNormals();
+
+			Pyramid pyramid = new Pyramid();
 
 			while (window.IsOpened)
 			{
@@ -92,15 +94,26 @@ namespace Aiv.Fast3D.Perspective.Example
 				if (window.GetKey(KeyCode.Down))
 					camera.Position3 += -camera.Up * 10 * window.deltaTime;
 
-				float yaw = MouseX(window) * 60f * window.deltaTime;
-				float pitch = MouseY(window) * 60f * window.deltaTime;
-				camera.EulerRotation3 += new Vector3(pitch, yaw, 0);
+				if (window.HasFocus)
+				{
+					float yaw = MouseX(window) * (90 + 45f);
+					float pitch = MouseY(window) * 90f;
+					pitch = 0;
+					camera.EulerRotation3 += new Vector3(pitch, yaw, 0) * window.deltaTime;
+				}
 
 
 				floor.DrawColor(new Vector4(0, 1, 0, 1));
 
+				pyramid.Scale3 = new Vector3(1, 2, 1);
+				pyramid.Position3 = new Vector3(-6, 2, 10);
+				pyramid.DrawGouraud(new Vector4(1, 0, 0, 1), new Vector3(50, 50, 20), new Vector3(1, 1, 1));
+
 				stormTrooper.Position3 = new Vector3(0, 0, 5);
 				stormTrooper.DrawGouraud(stormTrooperTexture, new Vector3(50, 50, 20), new Vector3(1, 1, 1));
+
+				stormTrooper.Position3 = new Vector3(-5, 0, 5);
+				stormTrooper.DrawPhong(stormTrooperTexture, new Vector3(50, 50, 20), new Vector3(1, 1, 1), new Vector3(0, 0.1f, 0));
 
 				//cube.DrawColor(new Vector4(1, 0, 0, 1));
 

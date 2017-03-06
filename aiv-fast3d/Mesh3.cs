@@ -23,10 +23,12 @@ uniform mat4 view;
 uniform vec3 light_position;
 
 uniform float use_gouraud;
+uniform float use_phong;
 
 out vec2 uvout;
 out vec4 vertex_color;
-out vec3 vertex_normal;
+out vec3 normal_from_view;
+out vec3 light_direction;
 
 out float lambert;
 
@@ -35,8 +37,7 @@ void main(){
 		
         uvout = uv;
         vertex_color = vc;
-		vertex_normal = vn;
-
+	
 		if (use_gouraud > 0.0) {
 			// compute the vertex in camera space
 			vec3 vertex_from_view = (mv * vec4(vertex.xyz, 1.0)).xyz;
@@ -45,9 +46,19 @@ void main(){
 			// compute the normal in camera space
 			vec3 normal_from_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
 			// get the light direction from the vertex
-			vec3 light_direction = normalize(light_from_view - vertex_from_view);
+			light_direction = normalize(light_from_view - vertex_from_view);
 			// get the lambert cosine
 			lambert = clamp(dot(normal_from_view, light_direction), 0.0, 1.0);
+		}
+		else if (use_phong > 0.0) {
+			// compute the vertex in camera space
+			vec3 vertex_from_view = (mv * vec4(vertex.xyz, 1.0)).xyz;
+			// compute the light in camera space
+			vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
+			// compute the normal in camera space
+			normal_from_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
+			// get the light direction from the vertex
+			light_direction = normalize(light_from_view - vertex_from_view);
 		}
 }";
 		private static string simpleFragmentShader3 = @"
@@ -63,6 +74,7 @@ uniform float use_wireframe;
 uniform sampler2D tex;
 
 uniform float use_gouraud;
+uniform float use_phong;
 
 uniform vec3 ambient;
 
@@ -70,7 +82,11 @@ in vec2 uvout;
 in vec4 vertex_color;
 in float lambert;
 
+in vec3 normal_from_view;
+in vec3 light_direction;
+
 out vec4 out_color;
+
 
 void main(){
     if (use_texture > 0.0) {
@@ -93,6 +109,10 @@ void main(){
 
 	if (use_gouraud > 0.0) {
 		out_color = vec4(out_color.xyz * lambert, out_color.w);
+	}
+	else if (use_phong > 0.0) {
+		float diffuse = clamp(dot(normal_from_view, light_direction), 0.0, 1.0);
+		out_color = vec4(out_color.xyz * diffuse + ambient, out_color.w);
 	}
 }";
 
@@ -282,7 +302,40 @@ void main(){
 
 		public void RegenerateNormals()
 		{
+			this.vn = new float[this.v.Length];
+			for (int i = 0; i < this.v.Length; i += 9)
+			{
+				float x = this.v[i];
+				float y = this.v[i + 1];
+				float z = this.v[i + 2];
+				Vector3 v0 = new Vector3(x, y, z);
+				x = this.v[i + 3];
+				y = this.v[i + 4];
+				z = this.v[i + 5];
+				Vector3 v1 = new Vector3(x, y, z);
+				x = this.v[i + 6];
+				y = this.v[i + 7];
+				z = this.v[i + 8];
+				Vector3 v2 = new Vector3(x, y, z);
 
+				Vector3 vn0 = Vector3.Cross(v2 - v0, v1 - v0).Normalized() * -1;
+				Vector3 vn1 = Vector3.Cross(v0 - v1, v2 - v1).Normalized() * -1;
+				Vector3 vn2 = Vector3.Cross(v1 - v2, v0 - v2).Normalized() * -1;
+
+				this.vn[i] = vn0.X;
+				this.vn[i + 1] = vn0.Y;
+				this.vn[i + 2] = vn0.Z;
+
+				this.vn[i + 3] = vn1.X;
+				this.vn[i + 4] = vn1.Y;
+				this.vn[i + 5] = vn1.Z;
+
+				this.vn[i + 6] = vn2.X;
+				this.vn[i + 7] = vn2.Y;
+				this.vn[i + 8] = vn2.Z;
+			}
+
+			UpdateNormals();
 		}
 
 		public void DrawGouraud(Vector4 color, Vector3 light, Vector3 lightColor)
@@ -296,7 +349,12 @@ void main(){
 
 		public void DrawPhong(Vector4 color, Vector3 light, Vector3 lightColor, Vector3 ambientColor)
 		{
-
+			this.Bind();
+			this.shader.SetUniform("use_phong", 1f);
+			this.shader.SetUniform("light_position", light);
+			this.shader.SetUniform("ambient", ambientColor);
+			this.DrawColor(color.X, color.Y, color.Z, color.W);
+			this.shader.SetUniform("use_phong", 0f);
 		}
 
 		public void DrawGouraud(Texture texture, Vector3 light, Vector3 lightColor)
@@ -310,7 +368,12 @@ void main(){
 
 		public void DrawPhong(Texture texture, Vector3 light, Vector3 lightColor, Vector3 ambientColor)
 		{
-
+			this.Bind();
+			this.shader.SetUniform("use_phong", 1f);
+			this.shader.SetUniform("light_position", light);
+			this.shader.SetUniform("ambient", ambientColor);
+			this.DrawTexture(texture);
+			this.shader.SetUniform("use_phong", 0f);
 		}
 	}
 }
