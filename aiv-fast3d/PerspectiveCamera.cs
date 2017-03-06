@@ -60,16 +60,31 @@ namespace Aiv.Fast3D
 			}
 		}
 
-		public PerspectiveCamera(Vector3 position, Vector3 rotation)
+		private float fov;
+		private float zNear;
+		private float zFar;
+		private float aspectRatio;
+
+		public override bool HasProjection
+		{
+			get
+			{
+				return true;
+			}
+		}
+
+		public PerspectiveCamera(Vector3 position, Vector3 rotation, float fov, float zNear, float zFar, float aspectRatio = 0)
 		{
 			this.position3 = position;
 			this.EulerRotation3 = rotation;
-		}
-
-		public PerspectiveCamera(Vector3 position)
-		{
-			this.position3 = position;
-			this.EulerRotation3 = Vector3.Zero;
+			this.fov = fov * (float)(Math.PI / 180f);
+			this.zNear = zNear;
+			this.zFar = zFar;
+			this.aspectRatio = aspectRatio;
+			if (this.aspectRatio == 0)
+			{
+				this.aspectRatio = Window.Current.aspectRatio;
+			}
 		}
 
 		private Matrix4 rotationMatrix
@@ -85,6 +100,13 @@ namespace Aiv.Fast3D
 		public override Matrix4 Matrix()
 		{
 			return Matrix4.LookAt(position3, position3 + this.Forward, Vector3.UnitY);
+
+		}
+
+		public override Matrix4 ProjectionMatrix()
+		{
+			float fovY = fov / aspectRatio;
+			return Matrix4.CreatePerspectiveFieldOfView(fovY, aspectRatio, zNear, zFar);
 		}
 	}
 }

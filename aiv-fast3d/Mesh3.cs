@@ -112,7 +112,7 @@ void main(){
 	}
 	else if (use_phong > 0.0) {
 		float diffuse = clamp(dot(normal_from_view, light_direction), 0.0, 1.0);
-		out_color = vec4(out_color.xyz * diffuse + ambient, out_color.w);
+		out_color = vec4(out_color.xyz * diffuse + out_color.xyz * ambient, out_color.w);
 	}
 }";
 
@@ -275,16 +275,26 @@ void main(){
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 
+			Matrix4 projectionMatrix = Window.Current.ProjectionMatrix;
+
 			// camera space
 			if (this.Camera != null)
 			{
 				this.shader.SetUniform("view", this.Camera.Matrix());
 				m *= this.Camera.Matrix();
+				if (this.Camera.HasProjection)
+				{
+					projectionMatrix = this.Camera.ProjectionMatrix();
+				}
 			}
 			else if (Window.Current.CurrentCamera != null)
 			{
 				this.shader.SetUniform("view", Window.Current.CurrentCamera.Matrix());
 				m *= Window.Current.CurrentCamera.Matrix();
+				if (Window.Current.CurrentCamera.HasProjection)
+				{
+					projectionMatrix = Window.Current.CurrentCamera.ProjectionMatrix();
+				}
 			}
 			else
 			{
@@ -294,7 +304,7 @@ void main(){
 			// for 3d shader we need to model+view transformation matrix for computing lights
 			this.shader.SetUniform("mv", m);
 
-			Matrix4 mvp = m * Window.Current.ProjectionMatrix;
+			Matrix4 mvp = m * projectionMatrix;
 
 			// pass the matrix to the shader
 			this.shader.SetUniform("mvp", mvp);

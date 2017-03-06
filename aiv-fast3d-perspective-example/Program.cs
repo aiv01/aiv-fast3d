@@ -42,15 +42,15 @@ namespace Aiv.Fast3D.Perspective.Example
 		static void Main(string[] args)
 		{
 			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 24, 4);
+			window.SetDefaultOrthographicSize(10);
 			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
-			window.SetPerspective(60);
-			window.SetZNearZFar(0.01f, 1000);
+
 			window.EnableDepthTest();
 			window.CullBackFaces();
 
 			window.SetCursor(false);
 
-			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 30), new Vector3(0, 0, 180f));
+			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 30), new Vector3(0, 0, 180f), 60, 0.01f, 1000);
 
 			Texture crate = new Texture("Assets/crate.jpg");
 
@@ -65,8 +65,8 @@ namespace Aiv.Fast3D.Perspective.Example
 			Cube cube = new Cube();
 
 			Cube floor = new Cube();
-			floor.Scale3 = new Vector3(50, 1f, 50);
-			floor.Position3 = new Vector3(0, -1, 0);
+			floor.Scale3 = new Vector3(50, 50f, 50);
+			floor.Position3 = new Vector3(0, -25, 0);
 
 			// tiling texture
 			for (int i = 0; i < floor.uv.Length; i++)
@@ -80,6 +80,12 @@ namespace Aiv.Fast3D.Perspective.Example
 			//stormTrooper.RegenerateNormals();
 
 			Pyramid pyramid = new Pyramid();
+
+			Texture logoAiv = new Texture("Assets/LogoAIV.png");
+			Sprite logo = new Sprite(1 * logoAiv.Ratio, 1);
+
+			Camera hudCamera = new Camera();
+			logo.Camera = hudCamera;
 
 			while (window.IsOpened)
 			{
@@ -109,12 +115,16 @@ namespace Aiv.Fast3D.Perspective.Example
 				{
 					float yaw = MouseX(window) * (90 + 45f);
 					float pitch = MouseY(window) * 90f;
-					pitch = 0;
 					camera.EulerRotation3 += new Vector3(pitch, yaw, 0) * window.deltaTime;
 				}
 
+				if (window.GetKey(KeyCode.Right))
+					camera.EulerRotation3 += new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
-				floor.DrawTexture(floorTexture);
+				if (window.GetKey(KeyCode.Left))
+					camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
+
+				floor.DrawPhong(floorTexture, new Vector3(50, 50, 20), new Vector3(1, 1, 1), new Vector3(0.2f, 0.2f, 0.2f));
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
 				pyramid.Position3 = new Vector3(-6, 2, 10);
@@ -133,6 +143,8 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				cube.Position3 = new Vector3(5, 1, 5);
 				cube.DrawGouraud(new Vector4(0, 0, 1, 1), new Vector3(50, 50, 20), new Vector3(1, 1, 1));
+
+				logo.DrawTexture(logoAiv);
 
 				window.Update();
 			}
