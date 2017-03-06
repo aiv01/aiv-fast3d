@@ -54,6 +54,10 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			Texture crate = new Texture("Assets/crate.jpg");
 
+			Texture floorTexture = new Texture("Assets/floor.jpg");
+			floorTexture.SetRepeatX();
+			floorTexture.SetRepeatY();
+
 			Texture stormTrooperTexture = new Texture("Assets/Stormtrooper.png");
 			stormTrooperTexture.SetRepeatX();
 			stormTrooperTexture.SetRepeatY();
@@ -61,8 +65,15 @@ namespace Aiv.Fast3D.Perspective.Example
 			Cube cube = new Cube();
 
 			Cube floor = new Cube();
-			floor.Scale3 = new Vector3(10, 0.1f, 10);
+			floor.Scale3 = new Vector3(50, 1f, 50);
 			floor.Position3 = new Vector3(0, -1, 0);
+
+			// tiling texture
+			for (int i = 0; i < floor.uv.Length; i++)
+			{
+				floor.uv[i] *= 10;
+			}
+			floor.UpdateUV();
 
 			Mesh3 stormTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
 
@@ -103,7 +114,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				}
 
 
-				floor.DrawColor(new Vector4(0, 1, 0, 1));
+				floor.DrawTexture(floorTexture);
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
 				pyramid.Position3 = new Vector3(-6, 2, 10);
