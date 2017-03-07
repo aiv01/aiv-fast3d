@@ -142,19 +142,20 @@ void main(){
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
-			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.005) {
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.0001) {
 				out_color = vec4(0, 0, 0, 1);
 			}
 		}
 	}
 	else if (use_phong > 0.0) {
 		float diffuse = clamp(dot(normal_from_view, -light_direction), 0.0, 1.0);
-		out_color = vec4(out_color.xyz * diffuse + out_color.xyz * ambient, out_color.w);
+		vec3 base_color = out_color.xyz;
+		out_color = vec4(base_color * diffuse + base_color * ambient, out_color.w);
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
-			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.005) {
-				out_color = vec4(0, 0, 0, 1);
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.0001) {
+				out_color = vec4(base_color.xyz * ambient, out_color.w) ;
 			}
 		}
 	}
