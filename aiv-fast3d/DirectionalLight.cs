@@ -21,19 +21,25 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return m;
+				return m * ortho;
 			}
 		}
 
 		public DirectionalLight(Vector3 direction)
 		{
-			this.direction = direction;
+			UpdateDirection(direction);
 		}
 
+		public void UpdateDirection(Vector3 direction)
+		{
+			this.direction = direction;
+			m = Matrix4.LookAt(-direction, Vector3.Zero, Vector3.UnitY);
+		}
+
+		private Matrix4 ortho;
 		public void SetShadowProjection(float left, float right, float bottom, float top, float zNear, float zFar)
 		{
-			m = Matrix4.LookAt(-direction, Vector3.Zero, Vector3.UnitY)
-							   * Matrix4.CreateOrthographicOffCenter(left, right, bottom, top, zNear, zFar);
+			ortho = Matrix4.CreateOrthographicOffCenter(left, right, bottom, top, zNear, zFar);
 		}
 	}
 }

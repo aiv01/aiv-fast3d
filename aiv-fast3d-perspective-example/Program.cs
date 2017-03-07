@@ -140,6 +140,9 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				crateRotation += 30 * window.deltaTime;
 
+				//lightRotation += 10 * window.deltaTime;
+				//directionalLight.UpdateDirection(Utils.EulerRotationToDirection(new Vector3(lightRotation, 180, 0)));
+
 				window.DisableCullFaces();
 				// draw shadow map texture
 				window.RenderTo(shadowTexture);
