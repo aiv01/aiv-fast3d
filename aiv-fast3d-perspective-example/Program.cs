@@ -163,7 +163,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				window.CullBackFaces();
 
-				floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.2f, 0.2f, 0.2f), shadowTexture);
+				floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.5f, 0.5f, 0.5f), shadowTexture);
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
 				pyramid.Position3 = new Vector3(-6, 2, 10);
