@@ -46,7 +46,7 @@ namespace Aiv.Fast3D.Perspective.Example
 			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
 
 			window.EnableDepthTest();
-			window.CullBackFaces();
+			//window.CullBackFaces();
 
 			window.SetCursor(false);
 
@@ -87,7 +87,18 @@ namespace Aiv.Fast3D.Perspective.Example
 			Camera hudCamera = new Camera();
 			logo.Camera = hudCamera;
 
-			Mesh3 skySphere = ObjLoader.Load("Assets/SM_SkySphere.OBJ", Vector3.One)[0];
+			float lightRotation = 60;
+
+
+			DepthTexture shadowTexture = new DepthTexture(1024, 1024, 24);
+
+			Sprite shadow = new Sprite(5, 5);
+			shadow.Camera = hudCamera;
+
+			DirectionalLight directionalLight = new DirectionalLight(Utils.EulerRotationToDirection(new Vector3(lightRotation, 180, 0)));
+			directionalLight.SetShadowProjection(-10, 10, -10, 10, -10, 20);
+
+			float crateRotation = 0;
 
 			while (window.IsOpened)
 			{
@@ -115,9 +126,10 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				if (window.HasFocus)
 				{
+					// currently broken, the mouse is too flaky
 					float yaw = MouseX(window) * (90 + 45f);
 					float pitch = MouseY(window) * 90f;
-					camera.EulerRotation3 += new Vector3(pitch, yaw, 0) * window.deltaTime;
+					//camera.EulerRotation3 += new Vector3(pitch, yaw, 0) * window.deltaTime;
 				}
 
 				if (window.GetKey(KeyCode.Right))
@@ -126,32 +138,55 @@ namespace Aiv.Fast3D.Perspective.Example
 				if (window.GetKey(KeyCode.Left))
 					camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
+				crateRotation += 30 * window.deltaTime;
+
 				window.DisableCullFaces();
-				skySphere.Scale3 = new Vector3(100, 100, 100);
-				skySphere.DrawColor(new Vector4(1, 1, 1, 1));
+				// draw shadow map texture
+				window.RenderTo(shadowTexture);
+				window.CullFrontFaces();
+				floor.DrawShadowMap(directionalLight);
+				pyramid.Scale3 = new Vector3(1, 2, 1);
+				pyramid.Position3 = new Vector3(-6, 2, 10);
+				pyramid.DrawShadowMap(directionalLight);
+				stormTrooper.Position3 = new Vector3(0, 0, 5);
+				stormTrooper.DrawShadowMap(directionalLight);
+				stormTrooper.Position3 = new Vector3(-5, 0, 5);
+				stormTrooper.DrawShadowMap(directionalLight);
+				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
+				cube.Position3 = new Vector3(0, 7, 0);
+				cube.DrawShadowMap(directionalLight);
+				cube.EulerRotation3 = Vector3.Zero;
+				cube.Position3 = new Vector3(5, 1, 5);
+				cube.DrawShadowMap(directionalLight);
+				window.DisableCullFaces();
+				window.RenderTo(null);
+
 				window.CullBackFaces();
 
-				floor.DrawPhong(floorTexture, new Vector3(50, 50, 20), new Vector3(1, 1, 1), new Vector3(0.2f, 0.2f, 0.2f));
+				floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.2f, 0.2f, 0.2f), shadowTexture);
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
 				pyramid.Position3 = new Vector3(-6, 2, 10);
-				pyramid.DrawGouraud(new Vector4(1, 0, 0, 1), new Vector3(50, 50, 20), new Vector3(1, 1, 1));
+				pyramid.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(0, 0, 5);
-				stormTrooper.DrawGouraud(stormTrooperTexture, new Vector3(50, 50, 20), new Vector3(1, 1, 1));
+				stormTrooper.DrawGouraud(stormTrooperTexture, directionalLight, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
-				stormTrooper.DrawPhong(stormTrooperTexture, new Vector3(50, 50, 20), new Vector3(1, 1, 1), new Vector3(0, 0.1f, 0));
+				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), shadowTexture);
 
 				//cube.DrawColor(new Vector4(1, 0, 0, 1));
-
+				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
 				cube.Position3 = new Vector3(0, 7, 0);
 				cube.DrawTexture(crate);
 
+				cube.EulerRotation3 = Vector3.Zero;
 				cube.Position3 = new Vector3(5, 1, 5);
-				cube.DrawGouraud(new Vector4(0, 0, 1, 1), new Vector3(50, 50, 20), new Vector3(1, 1, 1));
+				cube.DrawGouraud(new Vector4(0, 0, 1, 1), directionalLight, shadowTexture);
 
 				logo.DrawTexture(logoAiv);
+
+				shadow.DrawTexture(shadowTexture);
 
 				window.Update();
 			}

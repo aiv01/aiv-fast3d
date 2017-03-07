@@ -13,6 +13,7 @@ layout(location = 1) in vec2 uv;
 layout(location = 2) in vec4 vc;
 layout(location = 3) in vec3 vn;
 
+uniform mat4 model;
 
 uniform mat4 mvp;
 
@@ -20,10 +21,15 @@ uniform mat4 mv;
 
 uniform mat4 view;
 
+uniform mat4 depth_vp;
+
+uniform vec3 light_vector;
 uniform vec3 light_position;
+
 
 uniform float use_gouraud;
 uniform float use_phong;
+uniform float use_depth;
 
 out vec2 uvout;
 out vec4 vertex_color;
@@ -32,33 +38,47 @@ out vec3 light_direction;
 
 out float lambert;
 
+uniform float use_shadow_map;
+out vec4 shadow_position;
+
 void main(){
+
+		if (use_depth > 0.0) {
+			gl_Position = depth_vp * model * vec4(vertex.xyz, 1.0);
+			return;
+		}
+
         gl_Position = mvp * vec4(vertex.xyz, 1.0);
 		
         uvout = uv;
         vertex_color = vc;
+
+		if (use_shadow_map > 0.0) {
+			shadow_position = depth_vp * model * vec4(vertex.xyz, 1.0);
+		}
 	
 		if (use_gouraud > 0.0) {
 			// compute the vertex in camera space
 			vec3 vertex_from_view = (mv * vec4(vertex.xyz, 1.0)).xyz;
 			// compute the light in camera space
-			vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
+			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
 			// compute the normal in camera space
 			vec3 normal_from_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
-			// get the light direction from the vertex
-			light_direction = normalize(light_from_view - vertex_from_view);
+
+			light_direction = normalize(light_from_view);
 			// get the lambert cosine
-			lambert = clamp(dot(normal_from_view, light_direction), 0.0, 1.0);
+			lambert = clamp(dot(normal_from_view, -light_direction), 0.0, 1.0);
 		}
 		else if (use_phong > 0.0) {
 			// compute the vertex in camera space
 			vec3 vertex_from_view = (mv * vec4(vertex.xyz, 1.0)).xyz;
 			// compute the light in camera space
-			vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
+			//vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
+			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
 			// compute the normal in camera space
 			normal_from_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
-			// get the light direction from the vertex
-			light_direction = normalize(light_from_view - vertex_from_view);
+		
+			light_direction = normalize(light_from_view);
 		}
 }";
 		private static string simpleFragmentShader3 = @"
@@ -73,8 +93,13 @@ uniform float use_wireframe;
 
 uniform sampler2D tex;
 
+
+uniform float use_shadow_map;
+uniform sampler2D shadow_map_tex;
+
 uniform float use_gouraud;
 uniform float use_phong;
+uniform float use_depth;
 
 uniform vec3 ambient;
 
@@ -86,9 +111,14 @@ in vec3 normal_from_view;
 in vec3 light_direction;
 
 out vec4 out_color;
-
+in vec4 shadow_position;
 
 void main(){
+
+	if (use_depth > 0.0) {
+		return;
+	}
+
     if (use_texture > 0.0) {
 		out_color = texture(tex, uvout);
         out_color += vec4(vertex_color.xyz * out_color.a, vertex_color.a);
@@ -109,56 +139,28 @@ void main(){
 
 	if (use_gouraud > 0.0) {
 		out_color = vec4(out_color.xyz * lambert, out_color.w);
+		if (use_shadow_map > 0.0) {
+			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
+			shadow_projection = shadow_projection * 0.5 + 0.5;
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.005) {
+				out_color = vec4(0, 0, 0, 1);
+			}
+		}
 	}
 	else if (use_phong > 0.0) {
-		float diffuse = clamp(dot(normal_from_view, light_direction), 0.0, 1.0);
+		float diffuse = clamp(dot(normal_from_view, -light_direction), 0.0, 1.0);
 		out_color = vec4(out_color.xyz * diffuse + out_color.xyz * ambient, out_color.w);
+		if (use_shadow_map > 0.0) {
+			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
+			shadow_projection = shadow_projection * 0.5 + 0.5;
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.005) {
+				out_color = vec4(0, 0, 0, 1);
+			}
+		}
 	}
 }";
 
-		private static string simpleVertexShaderObsolete3 = @"
-attribute vec3 vertex;
-attribute vec2 uv;
-attribute vec4 vc;
-uniform mat4 mvp;
-uniform vec3 directional_light;
-varying vec2 uvout;
-varying vec4 vertex_color;
-varying vec3 vnout;
-void main(){
-        gl_Position = mvp * vec4(vertex.xyz, 1.0);
-        uvout = uv;
-        vertex_color = vc;
-}";
-		private static string simpleFragmentShaderObsolete3 = @"
-precision mediump float;
-uniform vec4 color;
-uniform float use_texture;
-uniform float use_wireframe;
-uniform sampler2D tex;
-varying vec2 uvout;
-varying vec4 vertex_color;
-void main(){
-    if (use_texture > 0.0) {
-        gl_FragColor = texture2D(tex, uvout);
-        gl_FragColor += vec4(vertex_color.xyz * gl_FragColor.a, vertex_color.a);
-    }
-    else if (use_wireframe > 0.0) {
-        if(any(lessThan(vertex_color.xyz, vec3(use_wireframe)))) {
-            gl_FragColor = color;
-        }
-        else {
-            gl_FragColor = vec4(0, 0, 0, 0);    
-        }
-        return;
-    }
-    else {
-        gl_FragColor = vertex_color;
-    }
-    gl_FragColor += color;
-}";
-
-		private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, simpleVertexShaderObsolete3, simpleFragmentShaderObsolete3, new string[] { "vertex", "uv", "vc", "vn" });
+		private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, null, null, null);
 
 		private Vector3 rotation3;
 		public Vector3 Rotation3
@@ -275,6 +277,8 @@ void main(){
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 
+			this.shader.SetUniform("model", m);
+
 			Matrix4 projectionMatrix = Window.Current.ProjectionMatrix;
 
 			// camera space
@@ -348,42 +352,83 @@ void main(){
 			UpdateNormals();
 		}
 
-		public void DrawGouraud(Vector4 color, Vector3 light, Vector3 lightColor)
+		public void DrawGouraud(Vector4 color, Light light, DepthTexture shadowMapTexture = null)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_gouraud", 1f);
-			this.shader.SetUniform("light_position", light);
+			this.shader.SetUniform("light_vector", light.Vector);
+			if (shadowMapTexture != null)
+			{
+				this.shader.SetUniform("use_shadow_map", 1f);
+				shadowMapTexture.Bind(1);
+				this.shader.SetUniform("shadow_map_tex", 1);
+				this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			}
 			this.DrawColor(color.X, color.Y, color.Z, color.W);
-			this.shader.SetUniform("use_gouraud", 0f);
+			this.shader.SetUniform("use_gouraud", -1f);
+			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawPhong(Vector4 color, Vector3 light, Vector3 lightColor, Vector3 ambientColor)
+		public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
-			this.shader.SetUniform("light_position", light);
+			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
+			if (shadowMapTexture != null)
+			{
+				this.shader.SetUniform("use_shadow_map", 1f);
+				shadowMapTexture.Bind(1);
+				this.shader.SetUniform("shadow_map_tex", 1);
+				this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			}
 			this.DrawColor(color.X, color.Y, color.Z, color.W);
-			this.shader.SetUniform("use_phong", 0f);
+			this.shader.SetUniform("use_phong", -1f);
+			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawGouraud(Texture texture, Vector3 light, Vector3 lightColor)
+		public void DrawGouraud(Texture texture, Light light, DepthTexture shadowMapTexture = null)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_gouraud", 1f);
-			this.shader.SetUniform("light_position", light);
+			this.shader.SetUniform("light_vector", light.Vector);
+			if (shadowMapTexture != null)
+			{
+				this.shader.SetUniform("use_shadow_map", 1f);
+				shadowMapTexture.Bind(1);
+				this.shader.SetUniform("shadow_map_tex", 1);
+				this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			}
 			this.DrawTexture(texture);
-			this.shader.SetUniform("use_gouraud", 0f);
+			this.shader.SetUniform("use_gouraud", -1f);
+			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawPhong(Texture texture, Vector3 light, Vector3 lightColor, Vector3 ambientColor)
+		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
-			this.shader.SetUniform("light_position", light);
+			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
+			if (shadowMapTexture != null)
+			{
+				this.shader.SetUniform("use_shadow_map", 1f);
+				shadowMapTexture.Bind(1);
+				this.shader.SetUniform("shadow_map_tex", 1);
+				this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			}
 			this.DrawTexture(texture);
-			this.shader.SetUniform("use_phong", 0f);
+			this.shader.SetUniform("use_phong", -1f);
+			this.shader.SetUniform("use_shadow_map", -1f);
+		}
+
+		public void DrawShadowMap(Light light)
+		{
+			this.Bind();
+			this.shader.SetUniform("use_depth", 1f);
+			this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			this.Draw();
+			this.shader.SetUniform("use_depth", -1f);
 		}
 	}
 }
