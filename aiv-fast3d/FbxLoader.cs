@@ -295,7 +295,7 @@ namespace Aiv.Fast3D
 						foreach (NodeAnimationChannel channel in animation.NodeAnimationChannels)
 						{
 							Vector3 lastPosition = Vector3.Zero;
-							Vector3 lastRotation = Vector3.Zero;
+							OpenTK.Quaternion lastRotation = OpenTK.Quaternion.Identity;
 							Vector3 lastScale = Vector3.One;
 							string nodeName = SanitizeBoneName(channel.NodeName);
 							if (channel.NodeName.Contains("_$AssimpFbx$_Translation"))
@@ -310,8 +310,7 @@ namespace Aiv.Fast3D
 							{
 								foreach (QuaternionKey key in channel.RotationKeys)
 								{
-									OpenTK.Quaternion q = new OpenTK.Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W);
-									lastRotation = QuaternionToVector3(q);
+									lastRotation = new OpenTK.Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W);
 									skeletalAnimation.AddKeyFrame(nodeName, (float)key.Time, lastPosition, lastRotation, lastScale);
 								}
 							}
@@ -333,8 +332,7 @@ namespace Aiv.Fast3D
 
 									lastPosition = new Vector3(keyT.Value.X, keyT.Value.Y, keyT.Value.Z) * multiplier;
 
-									OpenTK.Quaternion q = new OpenTK.Quaternion(keyR.Value.X, keyR.Value.Y, keyR.Value.Z, keyR.Value.W);
-									lastRotation = QuaternionToVector3(q);
+									lastRotation = new OpenTK.Quaternion(keyR.Value.X, keyR.Value.Y, keyR.Value.Z, keyR.Value.W);
 
 									lastScale = new Vector3(keyS.Value.X, keyS.Value.Y, keyS.Value.Z);
 

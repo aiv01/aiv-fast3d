@@ -285,7 +285,7 @@ void main(){
 		public class Bone
 		{
 			public Vector3 Position;
-			public Vector3 Rotation;
+			public Quaternion Rotation;
 			public Vector3 Scale;
 
 			private string name;
@@ -324,11 +324,11 @@ void main(){
 #else
                 		Matrix4.Scale(this.Scale.X, this.Scale.Y, this.Scale.Z) *
 #endif
-					Matrix4.CreateRotationX(this.Rotation.X) *
-					Matrix4.CreateRotationY(this.Rotation.Y) *
-					Matrix4.CreateRotationZ(this.Rotation.Z) *
+					Matrix4.CreateFromQuaternion(this.Rotation) *
+
 					Matrix4.CreateTranslation(Position);
 
+					return m;
 					Bone upperBone = parent;
 					while (upperBone != null)
 					{
@@ -338,10 +338,8 @@ void main(){
 #else
 							Matrix4.Scale(upperBone.Scale.X, upperBone.Scale.Y, upperBone.Scale.Z) *
 #endif
-						Matrix4.CreateRotationX(upperBone.Rotation.X) *
-						Matrix4.CreateRotationY(upperBone.Rotation.Y) *
-						Matrix4.CreateRotationZ(upperBone.Rotation.Z) *
-								   Matrix4.CreateTranslation(upperBone.Position) * m;
+							Matrix4.CreateFromQuaternion(upperBone.Rotation) *
+							Matrix4.CreateTranslation(upperBone.Position) * m;
 						upperBone = upperBone.parent;
 					}
 					return m;

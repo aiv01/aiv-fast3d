@@ -11,7 +11,7 @@ namespace Aiv.Fast3D
 		{
 			public float Time;
 			public Vector3 Position;
-			public Vector3 Rotation;
+			public Quaternion Rotation;
 			public Vector3 Scale;
 		}
 
@@ -42,7 +42,7 @@ namespace Aiv.Fast3D
 			KeyFrames = new Dictionary<string, List<KeyFrame>>();
 		}
 
-		public KeyFrame AddKeyFrame(string subject, float Time, Vector3 position, Vector3 rotation, Vector3 scale)
+		public KeyFrame AddKeyFrame(string subject, float Time, Vector3 position, Quaternion rotation, Vector3 scale)
 		{
 
 			if (!KeyFrames.ContainsKey(subject))
