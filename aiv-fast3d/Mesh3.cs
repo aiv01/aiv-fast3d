@@ -53,59 +53,60 @@ void main(){
 		vec4 new_vertex = vec4(vertex.xyz, 1);
 		vec4 new_normal = vec4(vn.xyz, 0);
 
+
+        uvout = uv;
+        vertex_color = vc;
+
 		if (use_skeleton > 0.0) {
 			// check up to 4 bones
 			int index = int(bones.x);
+			mat4 bone_mat = mat4(1);
 			if (index >= 0) {
 				float weight = bones_weight.x;
-				new_vertex = (skeleton[index] * new_vertex) * weight;
-				new_normal = (skeleton[index] * new_normal) * weight;
+				bone_mat = skeleton[index] * weight;
 			}
 			index = int(bones.y);
 			if (index >= 0) {
 				float weight = bones_weight.y;
-				new_vertex += (skeleton[index] * new_vertex) * weight;
-				new_normal += (skeleton[index] * new_normal) * weight;
+				bone_mat += skeleton[index] * weight;
 			}
 			index = int(bones.z);
 			if (index >= 0) {
 				float weight = bones_weight.z;
-				new_vertex += (skeleton[index] * new_vertex) * weight;
-				new_normal += (skeleton[index] * new_normal) * weight;
+				bone_mat += skeleton[index] * weight;
 			}
 			index = int(bones.w);
 			if (index >= 0) {
 				float weight = bones_weight.w;
-				new_vertex += (skeleton[index] * new_vertex) * weight;
-				new_normal += (skeleton[index] * new_normal) * weight;
+				bone_mat += skeleton[index] * weight;
 			}
 
-			// fixup w
+			new_vertex = bone_mat * new_vertex;
+			new_normal = bone_mat * new_normal;
+
+			// fixup w (could be broken after transformations)
 			new_vertex = vec4(new_vertex.xyz, 1);
 			new_normal = vec4(new_normal.xyz, 0);
 		}
 
 		if (use_depth > 0.0) {
-			gl_Position = depth_vp * model * vec4(new_vertex.xyz, 1.0);
+			gl_Position = depth_vp * model * new_vertex;
 			return;
 		}
 
-        gl_Position = mvp * vec4(new_vertex.xyz, 1.0);
+        gl_Position = mvp * new_vertex;
 		
-        uvout = uv;
-        vertex_color = vc;
-
 		if (use_shadow_map > 0.0) {
-			shadow_position = depth_vp * model * vec4(new_vertex.xyz, 1.0);
+			shadow_position = depth_vp * model * new_vertex;
 		}
 	
 		if (use_gouraud > 0.0) {
 			// compute the vertex in camera space
-			vec3 vertex_from_view = (mv * vec4(new_vertex.xyz, 1.0)).xyz;
+			vec3 vertex_from_view = (mv * new_vertex).xyz;
 			// compute the light in camera space
 			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
 			// compute the normal in camera space
-			vec3 normal_from_view = normalize(mv * vec4(new_normal.xyz, 0)).xyz;
+			vec3 normal_from_view = normalize(mv * new_normal).xyz;
 
 			light_direction = normalize(light_from_view);
 			// get the lambert cosine
@@ -113,12 +114,12 @@ void main(){
 		}
 		else if (use_phong > 0.0) {
 			// compute the vertex in camera space
-			vec3 vertex_from_view = (mv * vec4(new_vertex.xyz, 1.0)).xyz;
+			vec3 vertex_from_view = (mv * new_vertex).xyz;
 			// compute the light in camera space
 			//vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
 			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
 			// compute the normal in camera space
-			normal_from_view = normalize(mv * vec4(new_normal.xyz, 0)).xyz;
+			normal_from_view = normalize(mv * new_normal).xyz;
 		
 			light_direction = normalize(light_from_view);
 		}
@@ -304,6 +305,8 @@ void main(){
 				}
 			}
 
+			private Bone parent;
+
 			public Bone(int index, string name)
 			{
 				this.index = index;
@@ -315,10 +318,42 @@ void main(){
 			{
 				get
 				{
-					return Matrix4.CreateTranslation(Position);
+					Matrix4 m =
+#if !__MOBILE__
+						Matrix4.CreateScale(this.Scale) *
+#else
+                		Matrix4.Scale(this.Scale.X, this.Scale.Y, this.Scale.Z) *
+#endif
+					Matrix4.CreateRotationX(this.Rotation.X) *
+					Matrix4.CreateRotationY(this.Rotation.Y) *
+					Matrix4.CreateRotationZ(this.Rotation.Z) *
+					Matrix4.CreateTranslation(Position);
+
+					Bone upperBone = parent;
+					while (upperBone != null)
+					{
+						m =
+#if !__MOBILE__
+							Matrix4.CreateScale(upperBone.Scale) *
+#else
+							Matrix4.Scale(upperBone.Scale.X, upperBone.Scale.Y, upperBone.Scale.Z) *
+#endif
+						Matrix4.CreateRotationX(upperBone.Rotation.X) *
+						Matrix4.CreateRotationY(upperBone.Rotation.Y) *
+						Matrix4.CreateRotationZ(upperBone.Rotation.Z) *
+								   Matrix4.CreateTranslation(upperBone.Position) * m;
+						upperBone = upperBone.parent;
+					}
+					return m;
 				}
 			}
 
+			public void SetParent(Bone parentBone)
+			{
+				if (parentBone != null)
+					Console.WriteLine("setting parent of " + Name + " to " + parentBone.Name);
+				this.parent = parentBone;
+			}
 		}
 
 		private List<Bone> bones;
@@ -352,6 +387,19 @@ void main(){
 		public Bone GetBone(string name)
 		{
 			return skeleton[name];
+		}
+
+		public bool HasBone(string name)
+		{
+			return skeleton.ContainsKey(name);
+		}
+
+		public int BonesCount
+		{
+			get
+			{
+				return bones.Count;
+			}
 		}
 
 		public Mesh3() : base(simpleShader3, 3)

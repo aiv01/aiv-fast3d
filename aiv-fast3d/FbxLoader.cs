@@ -103,7 +103,7 @@ namespace Aiv.Fast3D
 			public float weight;
 		}
 
-		private static Mesh3 FbxToMesh3(Assimp.Mesh mesh, Vector3 multiplier)
+		private static Mesh3 FbxToMesh3(Scene scene, Assimp.Mesh mesh, Vector3 multiplier)
 		{
 
 
@@ -173,19 +173,63 @@ namespace Aiv.Fast3D
 				{
 					mesh3.AddBone(i, mesh.Bones[i].Name);
 				}
+
+				Console.WriteLine("Bones count = " + mesh3.BonesCount);
+
+				// fixup bones
+				FixBoneParenting(scene.RootNode, mesh3, null);
 			}
+
 			return mesh3;
+		}
+
+		private static string SanitizeBoneName(string name)
+		{
+			string assimpMagic = "_$AssimpFbx$";
+			if (name.Contains(assimpMagic))
+			{
+				int index = name.IndexOf(assimpMagic, StringComparison.Ordinal);
+				if (index >= 0)
+					name = name.Remove(index);
+			}
+			return name;
+		}
+
+		private static void FixBoneParenting(Node node, Mesh3 mesh, Mesh3.Bone parentBone)
+		{
+
+			string nodeName = SanitizeBoneName(node.Name);
+
+			if (mesh.HasBone(nodeName))
+			{
+				if (parentBone == null || (parentBone != null && parentBone.Name != nodeName))
+				{
+					Mesh3.Bone currentBone = mesh.GetBone(nodeName);
+					currentBone.SetParent(parentBone);
+					parentBone = currentBone;
+				}
+			}
+
+
+			for (int i = 0; i < node.ChildCount; i++)
+			{
+				Node childNode = node.Children[i];
+				FixBoneParenting(childNode, mesh, parentBone);
+			}
+
+
 		}
 
 		private static void BuildMesh(Scene scene, Node node, List<Mesh3> meshes, Vector3 multiplier)
 		{
+
 			if (node.HasMeshes)
 			{
 				foreach (int index in node.MeshIndices)
 				{
 					Assimp.Mesh mesh = scene.Meshes[index];
 
-					meshes.Add(FbxToMesh3(mesh, multiplier));
+					meshes.Add(FbxToMesh3(scene, mesh, multiplier));
 				}
 			}
 
@@ -206,6 +250,106 @@ namespace Aiv.Fast3D
 			BuildMesh(scene, scene.RootNode, meshes, multiplier);
 
 			return meshes.ToArray();
+		}
+
+		// taken from wikipedia
+		private static Vector3 QuaternionToVector3(OpenTK.Quaternion q)
+		{
+			double ySqr = q.Y * q.Y;
+
+			// roll
+			double t0 = +2.0 * (q.W * q.X + q.Y * q.Z);
+			double t1 = +1.0 - 2.0 * (q.X * q.X + ySqr);
+			float roll = (float)Math.Atan2(t0, t1);
+
+			// pitch
+			double t2 = +2.0 * (q.W * q.Y - q.Z * q.X);
+			t2 = t2 > 1.0 ? 1.0 : t2;
+			t2 = t2 < -1.0 ? -1.0 : t2;
+			float pitch = (float)Math.Asin(t2);
+
+			// yaw
+			double t3 = +2.0 * (q.W * q.Z + q.X * q.Y);
+			double t4 = +1.0 - 2.0 * (ySqr + q.Z * q.Z);
+			float yaw = (float)Math.Atan2(t3, t4);
+
+			return new Vector3(pitch, yaw, roll);
+		}
+
+		public static SkeletalAnimation[] LoadAnimations(string fileName, Vector3 multiplier)
+		{
+
+			AssimpContext importer = new AssimpContext();
+			Scene scene = importer.ImportFile(fileName);
+
+			List<SkeletalAnimation> skeletalAnimations = new List<SkeletalAnimation>();
+
+			if (scene.HasAnimations)
+			{
+
+				foreach (Animation animation in scene.Animations)
+				{
+					if (animation.HasNodeAnimations)
+					{
+						SkeletalAnimation skeletalAnimation = new SkeletalAnimation(animation.Name, (float)animation.TicksPerSecond);
+						foreach (NodeAnimationChannel channel in animation.NodeAnimationChannels)
+						{
+							Vector3 lastPosition = Vector3.Zero;
+							Vector3 lastRotation = Vector3.Zero;
+							Vector3 lastScale = Vector3.One;
+							string nodeName = SanitizeBoneName(channel.NodeName);
+							if (channel.NodeName.Contains("_$AssimpFbx$_Translation"))
+							{
+								foreach (VectorKey key in channel.PositionKeys)
+								{
+									lastPosition = new Vector3(key.Value.X, key.Value.Y, key.Value.Z) * multiplier;
+									skeletalAnimation.AddKeyFrame(nodeName, (float)key.Time, lastPosition, lastRotation, lastScale);
+								}
+							}
+							else if (channel.NodeName.Contains("_$AssimpFbx$_Rotation"))
+							{
+								foreach (QuaternionKey key in channel.RotationKeys)
+								{
+									OpenTK.Quaternion q = new OpenTK.Quaternion(key.Value.X, key.Value.Y, key.Value.Z, key.Value.W);
+									lastRotation = QuaternionToVector3(q);
+									skeletalAnimation.AddKeyFrame(nodeName, (float)key.Time, lastPosition, lastRotation, lastScale);
+								}
+							}
+							else if (channel.NodeName.Contains("_$AssimpFbx$_Scaling"))
+							{
+								foreach (VectorKey key in channel.ScalingKeys)
+								{
+									lastScale = new Vector3(key.Value.X, key.Value.Y, key.Value.Z);
+									skeletalAnimation.AddKeyFrame(nodeName, (float)key.Time, lastPosition, lastRotation, lastScale);
+								}
+							}
+							else
+							{
+								for (int i = 0; i < channel.PositionKeyCount; i++)
+								{
+									VectorKey keyT = channel.PositionKeys[i];
+									QuaternionKey keyR = channel.RotationKeys[i];
+									VectorKey keyS = channel.ScalingKeys[i];
+
+									lastPosition = new Vector3(keyT.Value.X, keyT.Value.Y, keyT.Value.Z) * multiplier;
+
+									OpenTK.Quaternion q = new OpenTK.Quaternion(keyR.Value.X, keyR.Value.Y, keyR.Value.Z, keyR.Value.W);
+									lastRotation = QuaternionToVector3(q);
+
+									lastScale = new Vector3(keyS.Value.X, keyS.Value.Y, keyS.Value.Z);
+
+									skeletalAnimation.AddKeyFrame(nodeName, (float)keyT.Time, lastPosition, lastRotation, lastScale);
+								}
+							}
+
+						}
+						skeletalAnimations.Add(skeletalAnimation);
+					}
+				}
+
+			}
+
+			return skeletalAnimations.ToArray();
 		}
 
 	}

@@ -24,5 +24,6 @@ namespace Aiv.Fast3D
 
 			return (m * new Vector4(Vector3.UnitZ, 0)).Xyz.Normalized();
 		}
+
 	}
 }
