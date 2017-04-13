@@ -100,6 +100,8 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			float crateRotation = 0;
 
+			Mesh3[] botMesh = FbxLoader.Load("Assets/running.fbx", new Vector3(0.02f, 0.02f, 0.02f));
+
 			while (window.IsOpened)
 			{
 
@@ -151,6 +153,13 @@ namespace Aiv.Fast3D.Perspective.Example
 				pyramid.Scale3 = new Vector3(1, 2, 1);
 				pyramid.Position3 = new Vector3(-6, 2, 10);
 				pyramid.DrawShadowMap(directionalLight);
+
+
+				botMesh[0].Position3 = new Vector3(6, 0, 10);
+				botMesh[0].DrawShadowMap(directionalLight);
+				botMesh[1].Position3 = new Vector3(6, 0, 10);
+				botMesh[1].DrawShadowMap(directionalLight);
+
 				stormTrooper.Position3 = new Vector3(0, 0, 5);
 				stormTrooper.DrawShadowMap(directionalLight);
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
@@ -165,6 +174,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				window.RenderTo(null);
 
 				window.CullBackFaces();
+				//window.DisableCullFaces();
 
 				floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.5f, 0.5f, 0.5f), shadowTexture);
 
@@ -172,11 +182,18 @@ namespace Aiv.Fast3D.Perspective.Example
 				pyramid.Position3 = new Vector3(-6, 2, 10);
 				pyramid.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture);
 
+				botMesh[0].Position3 = new Vector3(6, 0, 10);
+				botMesh[0].DrawGouraud(new Vector4(0, 0.8f, 1, 1), directionalLight, shadowTexture, 0.01f);
+				botMesh[1].Position3 = new Vector3(6, 0, 10);
+				botMesh[1].DrawGouraud(new Vector4(0, 0.8f, 1, 1), directionalLight, shadowTexture, 0.01f);
+
 				stormTrooper.Position3 = new Vector3(0, 0, 5);
 				stormTrooper.DrawGouraud(stormTrooperTexture, directionalLight, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
 				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), shadowTexture);
+
+
 
 				//cube.DrawColor(new Vector4(1, 0, 0, 1));
 				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);

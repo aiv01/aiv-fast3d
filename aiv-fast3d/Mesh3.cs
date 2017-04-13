@@ -101,6 +101,8 @@ uniform float use_gouraud;
 uniform float use_phong;
 uniform float use_depth;
 
+uniform float shadow_bias;
+
 uniform vec3 ambient;
 
 in vec2 uvout;
@@ -142,7 +144,7 @@ void main(){
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
-			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.0001) {
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-shadow_bias) {
 				out_color = vec4(0, 0, 0, 1);
 			}
 		}
@@ -154,7 +156,7 @@ void main(){
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
-			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-0.0001) {
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-shadow_bias) {
 				out_color = vec4(base_color.xyz * ambient, out_color.w) ;
 			}
 		}
@@ -353,11 +355,12 @@ void main(){
 			UpdateNormals();
 		}
 
-		public void DrawGouraud(Vector4 color, Light light, DepthTexture shadowMapTexture = null)
+		public void DrawGouraud(Vector4 color, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_gouraud", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
 			{
 				this.shader.SetUniform("use_shadow_map", 1f);
@@ -370,12 +373,13 @@ void main(){
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null)
+		public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
+			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
 			{
 				this.shader.SetUniform("use_shadow_map", 1f);
@@ -388,11 +392,12 @@ void main(){
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawGouraud(Texture texture, Light light, DepthTexture shadowMapTexture = null)
+		public void DrawGouraud(Texture texture, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_gouraud", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
 			{
 				this.shader.SetUniform("use_shadow_map", 1f);
@@ -405,12 +410,13 @@ void main(){
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null)
+		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
+			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
 			{
 				this.shader.SetUniform("use_shadow_map", 1f);

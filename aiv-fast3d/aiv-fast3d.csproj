@@ -40,6 +40,9 @@
     <Reference Include="aiv-fast2d">
       <HintPath>..\..\aiv-fast2d\aiv-fast2d-example\bin\Release\aiv-fast2d.dll</HintPath>
     </Reference>
+    <Reference Include="AssimpNet">
+      <HintPath>..\packages\AssimpNet.3.3.2\lib\net45\AssimpNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Mesh3.cs" />
@@ -52,6 +55,7 @@
     <Compile Include="DepthTexture.cs" />
     <Compile Include="Light.cs" />
     <Compile Include="DirectionalLight.cs" />
+    <Compile Include="FbxLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />
@@ -65,4 +69,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="..\packages\AssimpNet.3.3.2\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.2\build\AssimpNet.targets')" />
 </Project>

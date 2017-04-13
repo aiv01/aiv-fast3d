@@ -68,6 +68,7 @@
     <None Include="Assets\LogoAIV.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Assets\running.fbx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
