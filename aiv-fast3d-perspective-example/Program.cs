@@ -140,6 +140,10 @@ namespace Aiv.Fast3D.Perspective.Example
 				if (window.GetKey(KeyCode.Left))
 					camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
+
+				botMesh[0].GetBone(0).Position = new Vector3(0, 10, 0);
+				botMesh[1].GetBone(0).Position = new Vector3(0, 10, 0);
+
 				crateRotation += 30 * window.deltaTime;
 
 				//lightRotation += 10 * window.deltaTime;

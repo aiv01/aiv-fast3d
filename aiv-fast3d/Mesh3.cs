@@ -1,6 +1,7 @@
 ﻿using System;
 using Aiv.Fast2D;
 using OpenTK;
+using System.Collections.Generic;
 
 namespace Aiv.Fast3D
 {
@@ -12,6 +13,8 @@ layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv;
 layout(location = 2) in vec4 vc;
 layout(location = 3) in vec3 vn;
+layout(location = 4) in vec4 bones;
+layout(location = 5) in vec4 bones_weight;
 
 uniform mat4 model;
 
@@ -31,6 +34,10 @@ uniform float use_gouraud;
 uniform float use_phong;
 uniform float use_depth;
 
+uniform mat4 skeleton[80];
+
+uniform float use_skeleton;
+
 out vec2 uvout;
 out vec4 vertex_color;
 out vec3 normal_from_view;
@@ -43,27 +50,62 @@ out vec4 shadow_position;
 
 void main(){
 
+		vec4 new_vertex = vec4(vertex.xyz, 1);
+		vec4 new_normal = vec4(vn.xyz, 0);
+
+		if (use_skeleton > 0.0) {
+			// check up to 4 bones
+			int index = int(bones.x);
+			if (index >= 0) {
+				float weight = bones_weight.x;
+				new_vertex = (skeleton[index] * new_vertex) * weight;
+				new_normal = (skeleton[index] * new_normal) * weight;
+			}
+			index = int(bones.y);
+			if (index >= 0) {
+				float weight = bones_weight.y;
+				new_vertex += (skeleton[index] * new_vertex) * weight;
+				new_normal += (skeleton[index] * new_normal) * weight;
+			}
+			index = int(bones.z);
+			if (index >= 0) {
+				float weight = bones_weight.z;
+				new_vertex += (skeleton[index] * new_vertex) * weight;
+				new_normal += (skeleton[index] * new_normal) * weight;
+			}
+			index = int(bones.w);
+			if (index >= 0) {
+				float weight = bones_weight.w;
+				new_vertex += (skeleton[index] * new_vertex) * weight;
+				new_normal += (skeleton[index] * new_normal) * weight;
+			}
+
+			// fixup w
+			new_vertex = vec4(new_vertex.xyz, 1);
+			new_normal = vec4(new_normal.xyz, 0);
+		}
+
 		if (use_depth > 0.0) {
-			gl_Position = depth_vp * model * vec4(vertex.xyz, 1.0);
+			gl_Position = depth_vp * model * vec4(new_vertex.xyz, 1.0);
 			return;
 		}
 
-        gl_Position = mvp * vec4(vertex.xyz, 1.0);
+        gl_Position = mvp * vec4(new_vertex.xyz, 1.0);
 		
         uvout = uv;
         vertex_color = vc;
 
 		if (use_shadow_map > 0.0) {
-			shadow_position = depth_vp * model * vec4(vertex.xyz, 1.0);
+			shadow_position = depth_vp * model * vec4(new_vertex.xyz, 1.0);
 		}
 	
 		if (use_gouraud > 0.0) {
 			// compute the vertex in camera space
-			vec3 vertex_from_view = (mv * vec4(vertex.xyz, 1.0)).xyz;
+			vec3 vertex_from_view = (mv * vec4(new_vertex.xyz, 1.0)).xyz;
 			// compute the light in camera space
 			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
 			// compute the normal in camera space
-			vec3 normal_from_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
+			vec3 normal_from_view = normalize(mv * vec4(new_normal.xyz, 0)).xyz;
 
 			light_direction = normalize(light_from_view);
 			// get the lambert cosine
@@ -71,12 +113,12 @@ void main(){
 		}
 		else if (use_phong > 0.0) {
 			// compute the vertex in camera space
-			vec3 vertex_from_view = (mv * vec4(vertex.xyz, 1.0)).xyz;
+			vec3 vertex_from_view = (mv * vec4(new_vertex.xyz, 1.0)).xyz;
 			// compute the light in camera space
 			//vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
 			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
 			// compute the normal in camera space
-			normal_from_view = normalize(mv * vec4(vn.xyz, 0)).xyz;
+			normal_from_view = normalize(mv * vec4(new_normal.xyz, 0)).xyz;
 		
 			light_direction = normalize(light_from_view);
 		}
@@ -232,6 +274,86 @@ void main(){
 		public float[] vn;
 		private int vnBufferId;
 
+		public float[] bonesMapping;
+		private int bonesMappingBufferId;
+
+		public float[] bonesWeight;
+		private int bonesWeightBufferId;
+
+
+		public class Bone
+		{
+			public Vector3 Position;
+			public Vector3 Rotation;
+			public Vector3 Scale;
+
+			private string name;
+			private int index;
+			public string Name
+			{
+				get
+				{
+					return name;
+				}
+			}
+			public int Index
+			{
+				get
+				{
+					return index;
+				}
+			}
+
+			public Bone(int index, string name)
+			{
+				this.index = index;
+				this.name = name;
+				Scale = Vector3.One;
+			}
+
+			public Matrix4 Matrix
+			{
+				get
+				{
+					return Matrix4.CreateTranslation(Position);
+				}
+			}
+
+		}
+
+		private List<Bone> bones;
+		private Dictionary<string, Bone> skeleton;
+		public bool HasSkeleton
+		{
+			get
+			{
+				return skeleton != null;
+			}
+		}
+
+		public Bone AddBone(int index, string name)
+		{
+			if (skeleton == null)
+			{
+				skeleton = new Dictionary<string, Bone>();
+				bones = new List<Bone>();
+			}
+			Bone bone = new Bone(index, name);
+			skeleton[name] = bone;
+			bones.Insert(index, bone);
+			return bone;
+		}
+
+		public Bone GetBone(int index)
+		{
+			return bones[index];
+		}
+
+		public Bone GetBone(string name)
+		{
+			return skeleton[name];
+		}
+
 		public Mesh3() : base(simpleShader3, 3)
 		{
 
@@ -242,6 +364,16 @@ void main(){
 			this.vnBufferId = Graphics.NewBuffer();
 			Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
 
+			this.bonesMappingBufferId = Graphics.NewBuffer();
+			Graphics.MapBufferToArray(this.bonesMappingBufferId, 4, 4);
+			// hack for avoiding crashes for non skeletal meshes
+			Graphics.BufferData(this.bonesMappingBufferId, new float[1]);
+
+			this.bonesWeightBufferId = Graphics.NewBuffer();
+			Graphics.MapBufferToArray(this.bonesWeightBufferId, 5, 4);
+			// hack for avoiding crashes for non skeletal meshes
+			Graphics.BufferData(this.bonesWeightBufferId, new float[1]);
+
 			// ensure normals are loaded
 			this.shaderSetupHook += (mesh) =>
 			{
@@ -249,6 +381,19 @@ void main(){
 				{
 					this.vn = new float[this.v.Length];
 					((Mesh3)mesh).UpdateNormals();
+				}
+				if (((Mesh3)mesh).HasSkeleton)
+				{
+					((Mesh3)mesh).shader.SetUniform("use_skeleton", 1f);
+					List<Bone> bones = ((Mesh3)mesh).bones;
+					for (int i = 0; i < bones.Count; i++)
+					{
+						((Mesh3)mesh).shader.SetUniform(string.Format("skeleton[{0}]", i), bones[i].Matrix);
+					}
+				}
+				else
+				{
+					((Mesh3)mesh).shader.SetUniform("use_skeleton", -1f);
 				}
 			};
 		}
@@ -258,6 +403,14 @@ void main(){
 			if (this.vn == null)
 				return;
 			Graphics.BufferData(this.vnBufferId, this.vn);
+		}
+
+		public void UpdateBones()
+		{
+			if (this.bonesWeight == null || this.bonesMapping == null)
+				return;
+			Graphics.BufferData(this.bonesMappingBufferId, this.bonesMapping);
+			Graphics.BufferData(this.bonesWeightBufferId, this.bonesWeight);
 		}
 
 
