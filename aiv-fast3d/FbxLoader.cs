@@ -171,7 +171,27 @@ namespace Aiv.Fast3D
 			{
 				for (int i = 0; i < mesh.BoneCount; i++)
 				{
-					mesh3.AddBone(i, mesh.Bones[i].Name);
+					Mesh3.Bone newBone = mesh3.AddBone(i, mesh.Bones[i].Name);
+
+					//Assimp.Matrix4x4 rootMatrix = scene.RootNode.Transform;
+					//rootMatrix.Inverse();
+
+					//Assimp.Matrix4x4 nodeMatrix = scene.RootNode.FindNode(mesh.Bones[i].Name).Transform;
+
+					//Assimp.Matrix4x4 m = rootMatrix * nodeMatrix * mesh.Bones[i].OffsetMatrix;
+					//Assimp.Matrix4x4 m = rootMatrix;
+					//m.Inverse();
+
+					//newBone.rootMatrix = new OpenTK.Matrix4(m.A1, m.A2, m.A3, m.A4, m.B1, m.B2, m.B3, m.B4, m.C1, m.C2, m.C3, m.C4, m.D1, m.D2, m.D3, m.D4);
+					//newBone.rootMatrix = new OpenTK.Matrix4(m.A1, m.B1, m.C1, m.D1, m.A2, m.B2, m.C2, m.D2, m.A3, m.B3, m.C3, m.D3, m.A4, m.B4, m.C4, m.D4);
+
+					//m = nodeMatrix;
+					//m = mesh.Bones[i].OffsetMatrix * nodeMatrix;
+					Assimp.Matrix4x4 m = mesh.Bones[i].OffsetMatrix;
+					//m.Inverse();
+					//newBone.BaseMatrix = new OpenTK.Matrix4(m.A1, m.A2, m.A3, m.A4, m.B1, m.B2, m.B3, m.B4, m.C1, m.C2, m.C3, m.C4, m.D1, m.D2, m.D3, m.D4);
+
+					newBone.BaseMatrix = new OpenTK.Matrix4(m.A1, m.B1, m.C1, m.D1, m.A2, m.B2, m.C2, m.D2, m.A3, m.B3, m.C3, m.D3, m.A4, m.B4, m.C4, m.D4);
 				}
 
 				Console.WriteLine("Bones count = " + mesh3.BonesCount);

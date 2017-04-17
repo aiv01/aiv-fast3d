@@ -288,6 +288,9 @@ void main(){
 			public Quaternion Rotation;
 			public Vector3 Scale;
 
+			public Matrix4 rootMatrix;
+			public Matrix4 BaseMatrix;
+
 			private string name;
 			private int index;
 			public string Name
@@ -312,6 +315,9 @@ void main(){
 				this.index = index;
 				this.name = name;
 				Scale = Vector3.One;
+				Rotation = Quaternion.Identity;
+				BaseMatrix = Matrix4.Identity;
+				rootMatrix = Matrix4.Identity;
 			}
 
 			public Matrix4 Matrix
@@ -326,9 +332,8 @@ void main(){
 #endif
 					Matrix4.CreateFromQuaternion(this.Rotation) *
 
-					Matrix4.CreateTranslation(Position);
+							   Matrix4.CreateTranslation(Position);
 
-					return m;
 					Bone upperBone = parent;
 					while (upperBone != null)
 					{
@@ -339,9 +344,26 @@ void main(){
 							Matrix4.Scale(upperBone.Scale.X, upperBone.Scale.Y, upperBone.Scale.Z) *
 #endif
 							Matrix4.CreateFromQuaternion(upperBone.Rotation) *
-							Matrix4.CreateTranslation(upperBone.Position) * m;
+								   Matrix4.CreateTranslation(upperBone.Position) * m;
 						upperBone = upperBone.parent;
 					}
+
+					return m;
+				}
+			}
+
+			public Matrix4 BoneSpaceMatrix
+			{
+				get
+				{
+					Matrix4 m = this.BaseMatrix;
+					Bone upperBone = parent;
+					while (upperBone != null)
+					{
+						m = upperBone.BaseMatrix * m;
+						upperBone = upperBone.parent;
+					}
+
 					return m;
 				}
 			}

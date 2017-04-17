@@ -184,27 +184,27 @@ namespace Aiv.Fast3D.Perspective.Example
 						Mesh3.Bone bone = botMesh[0].GetBone(subject);
 						if (animationIndex < animations[0].KeyFrames[subject].Count)
 						{
-							bone.Position = animations[0].KeyFrames[subject][animationIndex].Position;
-							bone.Rotation = animations[0].KeyFrames[subject][animationIndex].Rotation;
+							//bone.Position = animations[0].KeyFrames[subject][animationIndex].Position;
+							//bone.Rotation = animations[0].KeyFrames[subject][animationIndex].Rotation;
 						}
 					}
 				}
 
-				/*
+
 				neckRotation += window.deltaTime;
 
 				string boneName = "mixamorig:Neck";
 				if (botMesh[0].HasBone(boneName))
 				{
 					Mesh3.Bone bone = botMesh[0].GetBone(boneName);
-					bone.Rotation = new Vector3(0, (float)Math.Sin(neckRotation) / 2, 0);
+					bone.Rotation = Quaternion.FromEulerAngles(new Vector3(0, (float)Math.Sin(neckRotation) / 2, 0));
 				}
 
 				if (botMesh[1].HasBone(boneName))
 				{
 					Mesh3.Bone bone = botMesh[1].GetBone(boneName);
-					bone.Rotation = new Vector3(0, (float)Math.Sin(neckRotation) / 2, 0);
-				}*/
+					bone.Rotation = Quaternion.FromEulerAngles(new Vector3(0, (float)Math.Sin(neckRotation) / 2, 0));
+				}
 
 
 
