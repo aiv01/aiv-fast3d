@@ -272,29 +272,6 @@ namespace Aiv.Fast3D
 			return meshes.ToArray();
 		}
 
-		// taken from wikipedia
-		private static Vector3 QuaternionToVector3(OpenTK.Quaternion q)
-		{
-			double ySqr = q.Y * q.Y;
-
-			// roll
-			double t0 = +2.0 * (q.W * q.X + q.Y * q.Z);
-			double t1 = +1.0 - 2.0 * (q.X * q.X + ySqr);
-			float roll = (float)Math.Atan2(t0, t1);
-
-			// pitch
-			double t2 = +2.0 * (q.W * q.Y - q.Z * q.X);
-			t2 = t2 > 1.0 ? 1.0 : t2;
-			t2 = t2 < -1.0 ? -1.0 : t2;
-			float pitch = (float)Math.Asin(t2);
-
-			// yaw
-			double t3 = +2.0 * (q.W * q.Z + q.X * q.Y);
-			double t4 = +1.0 - 2.0 * (ySqr + q.Z * q.Z);
-			float yaw = (float)Math.Atan2(t3, t4);
-
-			return new Vector3(pitch, yaw, roll);
-		}
 
 		public static SkeletalAnimation[] LoadAnimations(string fileName, Vector3 multiplier)
 		{
