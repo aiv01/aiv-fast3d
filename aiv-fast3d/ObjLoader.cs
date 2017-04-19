@@ -48,6 +48,21 @@ namespace Aiv.Fast3D
 				// third vertex
 				indices = items[3].Split('/');
 				AddVertex(indices);
+
+				if (items.Length > 4)
+				{
+					// fourth vertex
+					indices = items[4].Split('/');
+					AddVertex(indices);
+
+					// first vertex
+					indices = items[1].Split('/');
+					AddVertex(indices);
+
+					// second vertex
+					indices = items[3].Split('/');
+					AddVertex(indices);
+				}
 			}
 
 			private void AddVertex(string[] indices)
@@ -127,6 +142,11 @@ namespace Aiv.Fast3D
 				finalMeshes[i].uv = meshes[i].vtList.ToArray();
 				finalMeshes[i].vn = meshes[i].vnList.ToArray();
 				finalMeshes[i].Update();
+				// check if normals are available
+				if (meshes[i].vnList.Count == 0)
+				{
+					finalMeshes[i].RegenerateNormals();
+				}
 				finalMeshes[i].UpdateNormals();
 			}
 			return finalMeshes;
