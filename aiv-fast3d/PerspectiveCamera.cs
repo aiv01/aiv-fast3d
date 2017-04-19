@@ -27,7 +27,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (rotationMatrix * new Vector4(-Vector3.UnitZ)).Xyz;
+				return (rotationMatrix * new Vector4(Vector3.UnitZ)).Xyz;
 			}
 		}
 
@@ -35,7 +35,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (rotationMatrix * new Vector4(-Vector3.UnitX)).Xyz;
+				return Vector3.Cross(Forward, Up);
 			}
 		}
 
@@ -43,7 +43,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (rotationMatrix * new Vector4(-Vector3.UnitY)).Xyz;
+				return (rotationMatrix * new Vector4(Vector3.UnitY)).Xyz;
 			}
 		}
 
@@ -73,10 +73,10 @@ namespace Aiv.Fast3D
 			}
 		}
 
-		public PerspectiveCamera(Vector3 position, Vector3 rotation, float fov, float zNear, float zFar, float aspectRatio = 0)
+		public PerspectiveCamera(Vector3 position, Vector3 eulerRotation, float fov, float zNear, float zFar, float aspectRatio = 0)
 		{
 			this.position3 = position;
-			this.EulerRotation3 = rotation;
+			this.EulerRotation3 = eulerRotation;
 			this.fov = fov * (float)(Math.PI / 180f);
 			this.zNear = zNear;
 			this.zFar = zFar;
@@ -92,14 +92,15 @@ namespace Aiv.Fast3D
 			get
 			{
 				return Matrix4.CreateRotationX(rotation3.X) *
-					Matrix4.CreateRotationY(rotation3.Y) *
-					Matrix4.CreateRotationZ(rotation3.Z);
+							  Matrix4.CreateRotationY(rotation3.Y) *
+							  Matrix4.CreateRotationZ(rotation3.Z);
+
 			}
 		}
 
 		public override Matrix4 Matrix()
 		{
-			return Matrix4.LookAt(position3, position3 + this.Forward, Vector3.UnitY);
+			return Matrix4.LookAt(position3, position3 + this.Forward, this.Up);
 
 		}
 

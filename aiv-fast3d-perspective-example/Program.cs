@@ -50,7 +50,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			window.SetCursor(false);
 
-			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 30), new Vector3(0, 0, 180f), 60, 0.01f, 1000);
+			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 30), new Vector3(0, 180, 0), 60, 0.01f, 1000);
 
 			Texture crate = new Texture("Assets/crate.jpg");
 

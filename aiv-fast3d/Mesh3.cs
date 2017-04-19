@@ -260,6 +260,17 @@ void main(){
 			}
 		}
 
+		private Matrix4 rotationMatrix
+		{
+			get
+			{
+				return Matrix4.CreateRotationX(rotation3.X) *
+							  Matrix4.CreateRotationY(rotation3.Y) *
+							  Matrix4.CreateRotationZ(rotation3.Z);
+
+			}
+		}
+
 		public Vector3 EulerRotation3
 		{
 			get
@@ -269,6 +280,30 @@ void main(){
 			set
 			{
 				this.rotation3 = value * (float)Math.PI / 180f;
+			}
+		}
+
+		public Vector3 Forward
+		{
+			get
+			{
+				return (rotationMatrix * new Vector4(Vector3.UnitZ)).Xyz;
+			}
+		}
+
+		public Vector3 Right
+		{
+			get
+			{
+				return Vector3.Cross(Forward, Up);
+			}
+		}
+
+		public Vector3 Up
+		{
+			get
+			{
+				return (rotationMatrix * new Vector4(Vector3.UnitY)).Xyz;
 			}
 		}
 
