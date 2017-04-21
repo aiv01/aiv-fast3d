@@ -33,6 +33,7 @@ uniform vec3 light_position;
 uniform float use_gouraud;
 uniform float use_phong;
 uniform float use_depth;
+uniform float use_cel;
 
 uniform mat4 skeleton[80];
 
@@ -112,7 +113,7 @@ void main(){
 			// get the lambert cosine
 			lambert = clamp(dot(normal_from_view, -light_direction), 0.0, 1.0);
 		}
-		else if (use_phong > 0.0) {
+		else if (use_phong > 0.0 || use_cel > 0.0) {
 			// compute the vertex in camera space
 			vec3 vertex_from_view = (mv * new_vertex).xyz;
 			// compute the light in camera space
@@ -143,6 +144,9 @@ uniform sampler2D shadow_map_tex;
 uniform float use_gouraud;
 uniform float use_phong;
 uniform float use_depth;
+uniform float use_cel;
+
+uniform float threshold;
 
 uniform float shadow_bias;
 
@@ -192,8 +196,21 @@ void main(){
 			}
 		}
 	}
-	else if (use_phong > 0.0) {
+	else if (use_phong > 0.0 || use_cel > 0.0) {
 		float diffuse = clamp(dot(normal_from_view, -light_direction), 0.0, 1.0);
+
+		if (use_cel > 0.0) {
+			if (diffuse >= threshold) {
+				diffuse = 1;
+			}
+			else if (diffuse >= threshold/2) {
+				diffuse = 0.5;
+			}
+			else {
+				diffuse = 0;
+			}
+		}
+	
 		vec3 base_color = out_color.xyz;
 		out_color = vec4(base_color * diffuse + base_color * ambient, out_color.w);
 		if (use_shadow_map > 0.0) {
@@ -648,6 +665,26 @@ void main(){
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
+		public void DrawCel(Vector4 color, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+		{
+			this.Bind();
+			this.shader.SetUniform("use_cel", 1f);
+			this.shader.SetUniform("light_vector", light.Vector);
+			this.shader.SetUniform("ambient", ambientColor);
+			this.shader.SetUniform("threshold", threshold);
+			this.shader.SetUniform("shadow_bias", shadowBias);
+			if (shadowMapTexture != null)
+			{
+				this.shader.SetUniform("use_shadow_map", 1f);
+				shadowMapTexture.Bind(1);
+				this.shader.SetUniform("shadow_map_tex", 1);
+				this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			}
+			this.DrawColor(color.X, color.Y, color.Z, color.W);
+			this.shader.SetUniform("use_cel", -1f);
+			this.shader.SetUniform("use_shadow_map", -1f);
+		}
+
 		public void DrawGouraud(Texture texture, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
 		{
 			this.Bind();
@@ -682,6 +719,26 @@ void main(){
 			}
 			this.DrawTexture(texture);
 			this.shader.SetUniform("use_phong", -1f);
+			this.shader.SetUniform("use_shadow_map", -1f);
+		}
+
+		public void DrawCel(Texture texture, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+		{
+			this.Bind();
+			this.shader.SetUniform("use_cel", 1f);
+			this.shader.SetUniform("light_vector", light.Vector);
+			this.shader.SetUniform("ambient", ambientColor);
+			this.shader.SetUniform("threshold", threshold);
+			this.shader.SetUniform("shadow_bias", shadowBias);
+			if (shadowMapTexture != null)
+			{
+				this.shader.SetUniform("use_shadow_map", 1f);
+				shadowMapTexture.Bind(1);
+				this.shader.SetUniform("shadow_map_tex", 1);
+				this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			}
+			this.DrawTexture(texture);
+			this.shader.SetUniform("use_cel", -1f);
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 

@@ -232,6 +232,8 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.DrawShadowMap(directionalLight);
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
 				stormTrooper.DrawShadowMap(directionalLight);
+				stormTrooper.Position3 = new Vector3(5, 0, 5);
+				stormTrooper.DrawShadowMap(directionalLight);
 				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
 				cube.Position3 = new Vector3(0, 7, 0);
 				cube.DrawShadowMap(directionalLight);
@@ -261,6 +263,8 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
 				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), shadowTexture);
 
+				stormTrooper.Position3 = new Vector3(5, 0, 5);
+				stormTrooper.DrawCel(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 
 				//cube.DrawColor(new Vector4(1, 0, 0, 1));
