@@ -91,9 +91,9 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return Matrix4.CreateRotationX(rotation3.X) *
+				return Matrix4.CreateRotationZ(rotation3.Z) *
 							  Matrix4.CreateRotationY(rotation3.Y) *
-							  Matrix4.CreateRotationZ(rotation3.Z);
+							  Matrix4.CreateRotationX(rotation3.X);
 
 			}
 		}

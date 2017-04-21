@@ -296,9 +296,9 @@ void main(){
 		{
 			get
 			{
-				return Matrix4.CreateRotationX(rotation3.X) *
+				return Matrix4.CreateRotationZ(rotation3.Z) *
 							  Matrix4.CreateRotationY(rotation3.Y) *
-							  Matrix4.CreateRotationZ(rotation3.Z);
+							  Matrix4.CreateRotationX(rotation3.X);
 
 			}
 		}
@@ -517,6 +517,11 @@ void main(){
 					this.vn = new float[this.v.Length];
 					((Mesh3)mesh).UpdateNormals();
 				}
+				if (((Mesh3)mesh).uv == null)
+				{
+					this.uv = new float[this.v.Length];
+					((Mesh3)mesh).UpdateUV();
+				}
 				if (((Mesh3)mesh).HasSkeleton)
 				{
 					((Mesh3)mesh).shader.SetUniform("use_skeleton", 1f);
@@ -562,9 +567,9 @@ void main(){
 #else
                 Matrix4.Scale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #endif
-				Matrix4.CreateRotationX(this.rotation3.X) *
-				Matrix4.CreateRotationY(this.rotation3.Y) *
 				Matrix4.CreateRotationZ(this.rotation3.Z) *
+				Matrix4.CreateRotationY(this.rotation3.Y) *
+				Matrix4.CreateRotationX(this.rotation3.X) *
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 
@@ -686,7 +691,7 @@ void main(){
 			this.shader.SetUniform("use_cel", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
-            this.shader.SetUniform("shininess", 0f);
+			this.shader.SetUniform("shininess", 0f);
 			this.shader.SetUniform("threshold", threshold);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)

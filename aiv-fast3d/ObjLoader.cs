@@ -10,11 +10,13 @@ namespace Aiv.Fast3D
 {
 	public static class ObjLoader
 	{
+		private static List<Vector3> objVertices;
+		private static List<Vector2> objUVs;
+		private static List<Vector3> objNormals;
+
 		private class ObjMesh
 		{
-			public List<Vector3> objVertices;
-			public List<Vector2> objUVs;
-			public List<Vector3> objNormals;
+
 
 			public List<float> vList;
 			public List<float> vtList;
@@ -24,9 +26,7 @@ namespace Aiv.Fast3D
 
 			public ObjMesh(Vector3 multiplier)
 			{
-				objVertices = new List<Vector3>();
-				objUVs = new List<Vector2>();
-				objNormals = new List<Vector3>();
+
 
 				vList = new List<float>();
 				vtList = new List<float>();
@@ -74,19 +74,23 @@ namespace Aiv.Fast3D
 
 				if (indices.Length > 1)
 				{
-
-					Vector2 vtItem = objUVs[int.Parse(indices[1]) - 1];
-					vtList.Add(vtItem.X);
-					// by default textures are y-reversed
-					vtList.Add(1f - vtItem.Y);
+					if (indices[1] != "")
+					{
+						Vector2 vtItem = objUVs[int.Parse(indices[1]) - 1];
+						vtList.Add(vtItem.X);
+						// by default textures are y-reversed
+						vtList.Add(1f - vtItem.Y);
+					}
 
 					if (indices.Length > 2)
 					{
-
-						Vector3 vnItem = objNormals[int.Parse(indices[2]) - 1];
-						vnList.Add(vnItem.X);
-						vnList.Add(vnItem.Y);
-						vnList.Add(vnItem.Z);
+						if (indices[2] != "")
+						{
+							Vector3 vnItem = objNormals[int.Parse(indices[2]) - 1];
+							vnList.Add(vnItem.X);
+							vnList.Add(vnItem.Y);
+							vnList.Add(vnItem.Z);
+						}
 					}
 				}
 			}
@@ -97,13 +101,19 @@ namespace Aiv.Fast3D
 
 			List<ObjMesh> meshes = new List<ObjMesh>();
 
+			objVertices = new List<Vector3>();
+			objUVs = new List<Vector2>();
+			objNormals = new List<Vector3>();
+
 			ObjMesh currentMesh = null;
 
 			string[] lines = File.ReadAllLines(fileName);
 			foreach (string line in lines)
 			{
-				string[] items = line.Split(' ');
-				if (items[0] == "o")
+				string[] items = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				if (items.Length == 0)
+					continue;
+				if (items[0] == "o" || items[0] == "g")
 				{
 					currentMesh = new ObjMesh(multiplier);
 					meshes.Add(currentMesh);
@@ -116,17 +126,17 @@ namespace Aiv.Fast3D
 						meshes.Add(currentMesh);
 					}
 					Vector3 v = new Vector3(ParseFloat(items[1]), ParseFloat(items[2]), ParseFloat(items[3]));
-					currentMesh.objVertices.Add(v);
+					objVertices.Add(v);
 				}
 				else if (items[0] == "vt")
 				{
 					Vector2 vt = new Vector2(ParseFloat(items[1]), ParseFloat(items[2]));
-					currentMesh.objUVs.Add(vt);
+					objUVs.Add(vt);
 				}
 				else if (items[0] == "vn")
 				{
 					Vector3 v = new Vector3(ParseFloat(items[1]), ParseFloat(items[2]), ParseFloat(items[3]));
-					currentMesh.objNormals.Add(v);
+					objNormals.Add(v);
 				}
 				else if (items[0] == "f")
 				{
@@ -146,6 +156,12 @@ namespace Aiv.Fast3D
 				if (meshes[i].vnList.Count == 0)
 				{
 					finalMeshes[i].RegenerateNormals();
+				}
+				// check for invalid UVs
+				if (meshes[i].vtList.Count == 0)
+				{
+					// this will trigger uv regeneration
+					finalMeshes[i].uv = null;
 				}
 				finalMeshes[i].UpdateNormals();
 			}
