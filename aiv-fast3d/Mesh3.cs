@@ -43,6 +43,7 @@ out vec2 uvout;
 out vec4 vertex_color;
 out vec3 normal_from_view;
 out vec3 light_direction;
+out vec3 vertex_position;
 
 out float lambert;
 
@@ -123,6 +124,7 @@ void main(){
 			normal_from_view = normalize(mv * new_normal).xyz;
 		
 			light_direction = normalize(light_from_view);
+			vertex_position = (model * new_vertex).xyz;
 		}
 }";
 		private static string simpleFragmentShader3 = @"
@@ -131,6 +133,8 @@ void main(){
 precision highp float;
 
 uniform vec4 color;
+
+uniform mat4 view;
 
 uniform float use_texture;
 uniform float use_wireframe;
@@ -151,6 +155,7 @@ uniform float threshold;
 uniform float shadow_bias;
 
 uniform vec3 ambient;
+uniform float shininess;
 
 in vec2 uvout;
 in vec4 vertex_color;
@@ -158,9 +163,11 @@ in float lambert;
 
 in vec3 normal_from_view;
 in vec3 light_direction;
+in vec3 vertex_position;
 
 out vec4 out_color;
 in vec4 shadow_position;
+
 
 void main(){
 
@@ -210,9 +217,17 @@ void main(){
 				diffuse = 0;
 			}
 		}
+
+		vec3 camera_position = -view[3].xyz;
+		// reflection vector from light
+		vec3 light_reflection = reflect(light_direction, normal_from_view);
+		// direction from vertex to camera
+		vec3 vertex_to_camera = normalize(camera_position - vertex_position);
+
+		float specular = max(0.0, dot(vertex_to_camera, light_reflection)) * shininess;
 	
 		vec3 base_color = out_color.xyz;
-		out_color = vec4(base_color * diffuse + base_color * ambient, out_color.w);
+		out_color = vec4((base_color * diffuse) + (base_color * specular) + (base_color * ambient), out_color.w);
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
@@ -646,7 +661,7 @@ void main(){
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+		public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
@@ -671,6 +686,7 @@ void main(){
 			this.shader.SetUniform("use_cel", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
+            this.shader.SetUniform("shininess", 0f);
 			this.shader.SetUniform("threshold", threshold);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
@@ -703,12 +719,13 @@ void main(){
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
-		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
 		{
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
+			this.shader.SetUniform("shininess", shininess);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
 			{
@@ -728,6 +745,7 @@ void main(){
 			this.shader.SetUniform("use_cel", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
 			this.shader.SetUniform("ambient", ambientColor);
+			this.shader.SetUniform("shininess", 0f);
 			this.shader.SetUniform("threshold", threshold);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)

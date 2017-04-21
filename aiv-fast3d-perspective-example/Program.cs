@@ -232,7 +232,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.DrawShadowMap(directionalLight);
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
 				stormTrooper.DrawShadowMap(directionalLight);
-				stormTrooper.Position3 = new Vector3(5, 0, 5);
+				stormTrooper.Position3 = new Vector3(7, 0, 5);
 				stormTrooper.DrawShadowMap(directionalLight);
 				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
 				cube.Position3 = new Vector3(0, 7, 0);
@@ -246,7 +246,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				window.CullBackFaces();
 				//window.DisableCullFaces();
 
-				floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.5f, 0.5f, 0.5f), shadowTexture);
+				floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.5f, 0.5f, 0.5f), 0, shadowTexture);
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
 				pyramid.Position3 = new Vector3(-6, 2, 10);
@@ -261,9 +261,9 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.DrawGouraud(stormTrooperTexture, directionalLight, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
-				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), shadowTexture);
+				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
-				stormTrooper.Position3 = new Vector3(5, 0, 5);
+				stormTrooper.Position3 = new Vector3(7, 0, 5);
 				stormTrooper.DrawCel(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 
