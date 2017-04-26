@@ -296,9 +296,9 @@ void main(){
 		{
 			get
 			{
-				return Matrix4.CreateRotationZ(rotation3.Z) *
-							  Matrix4.CreateRotationY(rotation3.Y) *
-							  Matrix4.CreateRotationX(rotation3.X);
+				return Matrix4.CreateRotationZ(this.rotation3.Z) *
+							  Matrix4.CreateRotationY(this.rotation3.Y) *
+							  Matrix4.CreateRotationX(this.rotation3.X);
 
 			}
 		}
@@ -319,7 +319,7 @@ void main(){
 		{
 			get
 			{
-				return (rotationMatrix * new Vector4(Vector3.UnitZ)).Xyz;
+				return (rotationMatrix.ExtractRotation() * new Vector4(Vector3.UnitZ)).Xyz;
 			}
 		}
 
@@ -335,7 +335,7 @@ void main(){
 		{
 			get
 			{
-				return (rotationMatrix * new Vector4(Vector3.UnitY)).Xyz;
+				return (rotationMatrix.ExtractRotation() * new Vector4(Vector3.UnitY)).Xyz;
 			}
 		}
 

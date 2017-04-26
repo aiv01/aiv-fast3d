@@ -107,6 +107,9 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			int numFrames = 0;
 
+			Mesh3 movingTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
+			movingTrooper.Position3 = new Vector3(0, 1.5f, 10);
+
 			foreach (SkeletalAnimation animation in animations)
 			{
 				Console.WriteLine(animation.Name);
@@ -166,6 +169,12 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				if (window.GetKey(KeyCode.Left))
 					camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
+
+				if (window.GetKey(KeyCode.P))
+					camera.EulerRotation3 -= new Vector3(90 + 45, 0, 0) * window.deltaTime;
+
+				if (window.GetKey(KeyCode.L))
+					camera.EulerRotation3 += new Vector3(90 + 45, 0, 0) * window.deltaTime;
 
 
 				animationTimer -= window.deltaTime;
@@ -275,6 +284,17 @@ namespace Aiv.Fast3D.Perspective.Example
 				cube.EulerRotation3 = Vector3.Zero;
 				cube.Position3 = new Vector3(5, 1, 5);
 				cube.DrawGouraud(new Vector4(0, 0, 1, 1), directionalLight, shadowTexture);
+
+				if (window.GetKey(KeyCode.G))
+					movingTrooper.EulerRotation3 += new Vector3(0, 30, 0) * window.deltaTime;
+
+				if (window.GetKey(KeyCode.H))
+					movingTrooper.EulerRotation3 -= new Vector3(0, 30, 0) * window.deltaTime;
+
+				if (window.GetKey(KeyCode.Space))
+					movingTrooper.Position3 += movingTrooper.Forward * window.deltaTime;
+
+				movingTrooper.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight);
 
 				logo.DrawTexture(logoAiv);
 
