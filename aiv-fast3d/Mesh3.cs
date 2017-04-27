@@ -292,13 +292,13 @@ void main(){
 			}
 		}
 
-		private Matrix4 rotationMatrix
+		public Quaternion Quaternion
 		{
 			get
 			{
-				return Matrix4.CreateRotationZ(this.rotation3.Z) *
-							  Matrix4.CreateRotationY(this.rotation3.Y) *
-							  Matrix4.CreateRotationX(this.rotation3.X);
+				return (Matrix4.CreateRotationZ(this.rotation3.Z) *
+				Matrix4.CreateRotationY(this.rotation3.Y) *
+							  Matrix4.CreateRotationX(this.rotation3.X)).ExtractRotation();
 
 			}
 		}
@@ -319,7 +319,7 @@ void main(){
 		{
 			get
 			{
-				return (rotationMatrix.ExtractRotation() * new Vector4(Vector3.UnitZ)).Xyz;
+				return (this.Quaternion * new Vector4(Vector3.UnitZ)).Xyz;
 			}
 		}
 
@@ -335,7 +335,7 @@ void main(){
 		{
 			get
 			{
-				return (rotationMatrix.ExtractRotation() * new Vector4(Vector3.UnitY)).Xyz;
+				return (this.Quaternion * new Vector4(Vector3.UnitY)).Xyz;
 			}
 		}
 
@@ -553,15 +553,25 @@ void main(){
 			Graphics.BufferData(this.bonesWeightBufferId, this.bonesWeight);
 		}
 
-
-		protected override void ApplyMatrix()
+		private Mesh3 parent;
+		public Mesh3 Parent
 		{
-			if (this.noMatrix)
-				return;
+			get
+			{
+				return this.parent;
+			}
+		}
 
-			// WARNING !!! OpenTK uses row-major while OpenGL uses column-major
-			Matrix4 m =
-				Matrix4.CreateTranslation(-this.pivot3.X, -this.pivot3.Y, -this.pivot3.Z) *
+		public void SetParent(Mesh3 parent)
+		{
+			this.parent = parent;
+		}
+
+		public Matrix4 Matrix
+		{
+			get
+			{
+				Matrix4 m = Matrix4.CreateTranslation(-this.pivot3.X, -this.pivot3.Y, -this.pivot3.Z) *
 #if !__MOBILE__
 				Matrix4.CreateScale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #else
@@ -572,6 +582,23 @@ void main(){
 				Matrix4.CreateRotationX(this.rotation3.X) *
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
+
+				if (this.parent != null)
+				{
+					m *= this.parent.Matrix;
+				}
+
+				return m;
+			}
+		}
+
+		protected override void ApplyMatrix()
+		{
+			if (this.noMatrix)
+				return;
+
+			// WARNING !!! OpenTK uses row-major while OpenGL uses column-major
+			Matrix4 m = this.Matrix;
 
 			this.shader.SetUniform("model", m);
 

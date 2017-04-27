@@ -41,6 +41,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
 		static void Main(string[] args)
 		{
+			
 			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 24, 4);
 			window.SetDefaultOrthographicSize(10);
 			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
@@ -87,13 +88,14 @@ namespace Aiv.Fast3D.Perspective.Example
 			Camera hudCamera = new Camera();
 			logo.Camera = hudCamera;
 
-			float lightRotation = 60;
+			float lightRotation = 30;
 
 
 			DepthTexture shadowTexture = new DepthTexture(1024, 1024, 24);
 
 			Sprite shadow = new Sprite(5, 5);
 			shadow.Camera = hudCamera;
+
 
 			DirectionalLight directionalLight = new DirectionalLight(Utils.EulerRotationToDirection(new Vector3(lightRotation, 180, 0)));
 			directionalLight.SetShadowProjection(-10, 10, -10, 10, -10, 20);
@@ -108,7 +110,7 @@ namespace Aiv.Fast3D.Perspective.Example
 			int numFrames = 0;
 
 			Mesh3 movingTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
-			movingTrooper.Position3 = new Vector3(0, 1.5f, 10);
+			movingTrooper.Position3 = new Vector3(0, 0, 2);
 
 			foreach (SkeletalAnimation animation in animations)
 			{
@@ -131,6 +133,8 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			int animationIndex = 0;
 			float animationTimer = 1f / animations[0].Fps;
+
+			movingTrooper.SetParent(cube);
 
 			while (window.IsOpened)
 			{
@@ -238,10 +242,13 @@ namespace Aiv.Fast3D.Perspective.Example
 				botMesh[1].DrawShadowMap(directionalLight);
 
 				stormTrooper.Position3 = new Vector3(0, 0, 5);
+				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawShadowMap(directionalLight);
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
+				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawShadowMap(directionalLight);
 				stormTrooper.Position3 = new Vector3(7, 0, 5);
+				//stormTrooper.Rotation3 = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
 				stormTrooper.DrawShadowMap(directionalLight);
 				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
 				cube.Position3 = new Vector3(0, 7, 0);
@@ -267,12 +274,15 @@ namespace Aiv.Fast3D.Perspective.Example
 				botMesh[1].DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture, 0.01f);
 
 				stormTrooper.Position3 = new Vector3(0, 0, 5);
+				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawGouraud(stormTrooperTexture, directionalLight, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(-5, 0, 5);
+				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(7, 0, 5);
+				//stormTrooper.Rotation3 = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
 				stormTrooper.DrawCel(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 
@@ -281,20 +291,24 @@ namespace Aiv.Fast3D.Perspective.Example
 				cube.Position3 = new Vector3(0, 7, 0);
 				cube.DrawTexture(crate);
 
+				if (window.GetKey(KeyCode.Space))
+					movingTrooper.Position3 += movingTrooper.Forward * window.deltaTime * 2;
+
+				if (window.GetKey(KeyCode.G))
+					movingTrooper.EulerRotation3 += new Vector3(0, 90, 0) * window.deltaTime;
+
+				if (window.GetKey(KeyCode.H))
+					movingTrooper.EulerRotation3 -= new Vector3(0, 90, 0) * window.deltaTime;
+
+				movingTrooper.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight);
+
 				cube.EulerRotation3 = Vector3.Zero;
 				cube.Position3 = new Vector3(5, 1, 5);
 				cube.DrawGouraud(new Vector4(0, 0, 1, 1), directionalLight, shadowTexture);
 
-				if (window.GetKey(KeyCode.G))
-					movingTrooper.EulerRotation3 += new Vector3(0, 30, 0) * window.deltaTime;
 
-				if (window.GetKey(KeyCode.H))
-					movingTrooper.EulerRotation3 -= new Vector3(0, 30, 0) * window.deltaTime;
 
-				if (window.GetKey(KeyCode.Space))
-					movingTrooper.Position3 += movingTrooper.Forward * window.deltaTime;
 
-				movingTrooper.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight);
 
 				logo.DrawTexture(logoAiv);
 

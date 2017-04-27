@@ -48,5 +48,7 @@ namespace Aiv.Fast3D
 
 			return new Vector3(pitch, yaw, roll);
 		}
+
+
 	}
 }
