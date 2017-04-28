@@ -22,31 +22,46 @@ namespace Aiv.Fast3D
 							   Matrix4.CreateRotationY(axis.Y) *
 							   Matrix4.CreateRotationZ(axis.Z);
 
+
 			return (m * new Vector4(Vector3.UnitZ, 0)).Xyz.Normalized();
 		}
 
 		// taken from wikipedia
 		public static Vector3 QuaternionToRotation(OpenTK.Quaternion q)
 		{
-			double ySqr = q.Y * q.Y;
+			Vector3 v = Vector3.Zero;
 
-			// pitch
-			double t2 = +2.0 * (q.W * q.Y - q.Z * q.X);
-			t2 = t2 > 1.0 ? 1.0 : t2;
-			t2 = t2 < -1.0 ? -1.0 : t2;
-			float pitch = (float)Math.Asin(t2);
+			v.Y = (float)Math.Atan2
+						(
+							2 * q.Y * q.W - 2 * q.X * q.Z,
+							   1 - 2 * Math.Pow(q.Y, 2) - 2 * Math.Pow(q.Z, 2)
+						);
 
-			// yaw
-			double t0 = +2.0 * (q.W * q.X + q.Y * q.Z);
-			double t1 = +1.0 - 2.0 * (q.X * q.X + ySqr);
-			float yaw = (float)Math.Atan2(t0, t1);
+			v.X = (float)Math.Asin
+			(
+				2 * q.X * q.Y + 2 * q.Z * q.W
 
-			// roll
-			double t3 = +2.0 * (q.W * q.Z + q.X * q.Y);
-			double t4 = +1.0 - 2.0 * (ySqr + q.Z * q.Z);
-			float roll = (float)Math.Atan2(t3, t4);
+			);
 
-			return new Vector3(pitch, yaw, roll);
+			v.Z = (float)Math.Atan2
+						(
+							2 * q.X * q.W - 2 * q.Y * q.Z,
+							1 - 2 * Math.Pow(q.X, 2) - 2 * Math.Pow(q.Z, 2)
+						);
+
+			if (q.X * q.Y + q.Z * q.W == 0.5)
+			{
+				v.Y = (float)(2 * Math.Atan2(q.X, q.W));
+				v.Z = 0;
+			}
+
+			else if (q.X * q.Y + q.Z * q.W == -0.5)
+			{
+				v.Y = (float)(-2 * Math.Atan2(q.X, q.W));
+				v.Z = 0;
+			}
+
+			return v;
 		}
 
 

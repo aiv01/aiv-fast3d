@@ -41,7 +41,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
 		static void Main(string[] args)
 		{
-			
+
 			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 24, 4);
 			window.SetDefaultOrthographicSize(10);
 			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
@@ -169,10 +169,10 @@ namespace Aiv.Fast3D.Perspective.Example
 				}
 
 				if (window.GetKey(KeyCode.Right))
-					camera.EulerRotation3 += new Vector3(0, 90 + 45, 0) * window.deltaTime;
+					camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
 				if (window.GetKey(KeyCode.Left))
-					camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
+					camera.EulerRotation3 += new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
 				if (window.GetKey(KeyCode.P))
 					camera.EulerRotation3 -= new Vector3(90 + 45, 0, 0) * window.deltaTime;

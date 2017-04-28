@@ -27,7 +27,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (rotationMatrix * new Vector4(Vector3.UnitZ)).Xyz;
+				return (quaternion * new Vector4(Vector3.UnitZ)).Xyz;
 			}
 		}
 
@@ -43,20 +43,20 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (rotationMatrix * new Vector4(Vector3.UnitY)).Xyz;
+				return (quaternion * new Vector4(Vector3.UnitY)).Xyz;
 			}
 		}
 
-		private Vector3 rotation3;
+		private Quaternion quaternion;
 		public Vector3 EulerRotation3
 		{
 			get
 			{
-				return rotation3 * (float)(180f / Math.PI);
+				return Rotation3 * (float)(180f / Math.PI);
 			}
 			set
 			{
-				rotation3 = value * (float)(Math.PI / 180f);
+				Rotation3 = value * (float)(Math.PI / 180f);
 			}
 		}
 
@@ -64,11 +64,24 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return rotation3;
+				return Utils.QuaternionToRotation(quaternion);
 			}
 			set
 			{
-				rotation3 = value;
+				quaternion = Quaternion.FromEulerAngles(value);
+			}
+		}
+
+		public Quaternion Quaternion
+		{
+			get
+			{
+				return quaternion;
+			}
+
+			set
+			{
+				quaternion = value;
 			}
 		}
 
@@ -96,17 +109,6 @@ namespace Aiv.Fast3D
 			if (this.aspectRatio == 0)
 			{
 				this.aspectRatio = Window.Current.aspectRatio;
-			}
-		}
-
-		private Matrix4 rotationMatrix
-		{
-			get
-			{
-				return Matrix4.CreateRotationZ(rotation3.Z) *
-							  Matrix4.CreateRotationY(rotation3.Y) *
-							  Matrix4.CreateRotationX(rotation3.X);
-
 			}
 		}
 
