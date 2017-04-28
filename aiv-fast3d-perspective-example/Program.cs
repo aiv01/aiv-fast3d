@@ -88,7 +88,7 @@ namespace Aiv.Fast3D.Perspective.Example
 			Camera hudCamera = new Camera();
 			logo.Camera = hudCamera;
 
-			float lightRotation = 30;
+			float lightRotation = -30;
 
 
 			DepthTexture shadowTexture = new DepthTexture(1024, 1024, 24);

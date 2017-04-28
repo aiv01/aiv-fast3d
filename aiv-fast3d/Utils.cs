@@ -8,25 +8,16 @@ namespace Aiv.Fast3D
 		public static Vector3 EulerRotationToDirection(Vector3 axis)
 		{
 			// convert to radians
-			axis *= (float)(Math.PI / 180f);
-			Matrix4 m = Matrix4.CreateRotationX(axis.X) *
-							   Matrix4.CreateRotationY(axis.Y) *
-							   Matrix4.CreateRotationZ(axis.Z);
-
-			return (m * new Vector4(Vector3.UnitZ, 0)).Xyz.Normalized();
+			return RotationToDirection(axis * (float)(Math.PI / 180f));
 		}
+
 
 		public static Vector3 RotationToDirection(Vector3 axis)
 		{
-			Matrix4 m = Matrix4.CreateRotationX(axis.X) *
-							   Matrix4.CreateRotationY(axis.Y) *
-							   Matrix4.CreateRotationZ(axis.Z);
-
-
-			return (m * new Vector4(Vector3.UnitZ, 0)).Xyz.Normalized();
+			Quaternion q = Quaternion.FromEulerAngles(axis);
+			return (q * Vector3.UnitZ).Normalized();
 		}
 
-		// taken from wikipedia
 		public static Vector3 QuaternionToRotation(OpenTK.Quaternion q)
 		{
 			Vector3 v = Vector3.Zero;
@@ -64,6 +55,10 @@ namespace Aiv.Fast3D
 			return v;
 		}
 
+		public static Vector3 QuaternionToEulerRotation(OpenTK.Quaternion q)
+		{
+			return QuaternionToRotation(q) * 180f / (float)Math.PI;
+		}
 
 	}
 }

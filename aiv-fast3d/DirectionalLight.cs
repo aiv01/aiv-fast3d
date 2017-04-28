@@ -33,7 +33,7 @@ namespace Aiv.Fast3D
 		public void UpdateDirection(Vector3 direction)
 		{
 			this.direction = direction;
-			m = Matrix4.LookAt(-direction, Vector3.Zero, Vector3.UnitY);
+			m = Matrix4.LookAt(Vector3.Zero, direction, Vector3.UnitY);
 		}
 
 		private Matrix4 ortho;

@@ -27,7 +27,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (quaternion * new Vector4(Vector3.UnitZ)).Xyz;
+				return quaternion * Vector3.UnitZ;
 			}
 		}
 
@@ -43,7 +43,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (quaternion * new Vector4(Vector3.UnitY)).Xyz;
+				return quaternion * Vector3.UnitY;
 			}
 		}
 
