@@ -60,7 +60,7 @@ namespace Aiv.Fast3D
 			}
 		}
 
-		public Vector3 Rotation
+		public Vector3 Rotation3
 		{
 			get
 			{
