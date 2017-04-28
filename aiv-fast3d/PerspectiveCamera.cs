@@ -60,6 +60,18 @@ namespace Aiv.Fast3D
 			}
 		}
 
+		public Vector3 Rotation
+		{
+			get
+			{
+				return rotation3;
+			}
+			set
+			{
+				rotation3 = value;
+			}
+		}
+
 		private float fov;
 		private float zNear;
 		private float zFar;
