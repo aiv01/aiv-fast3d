@@ -248,7 +248,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawShadowMap(directionalLight);
 				stormTrooper.Position3 = new Vector3(7, 0, 5);
-				//stormTrooper.Rotation3 = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
+				stormTrooper.Quaternion = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
 				stormTrooper.DrawShadowMap(directionalLight);
 				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
 				cube.Position3 = new Vector3(0, 7, 0);
@@ -282,7 +282,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(7, 0, 5);
-				//stormTrooper.Rotation3 = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
+				stormTrooper.Quaternion = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
 				stormTrooper.DrawCel(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 

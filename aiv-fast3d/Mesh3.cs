@@ -240,16 +240,17 @@ void main(){
 
 		private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, null, null, null);
 
-		private Vector3 rotation3;
+		private Quaternion quaternion;
+
 		public Vector3 Rotation3
 		{
 			get
 			{
-				return rotation3;
+				return Utils.QuaternionToRotation(quaternion);
 			}
 			set
 			{
-				rotation3 = value;
+				quaternion = Quaternion.FromEulerAngles(value);
 			}
 		}
 
@@ -296,10 +297,12 @@ void main(){
 		{
 			get
 			{
-				return (Matrix4.CreateRotationZ(this.rotation3.Z) *
-				Matrix4.CreateRotationY(this.rotation3.Y) *
-							  Matrix4.CreateRotationX(this.rotation3.X)).ExtractRotation();
+				return quaternion;
 
+			}
+			set
+			{
+				quaternion = value;
 			}
 		}
 
@@ -307,11 +310,11 @@ void main(){
 		{
 			get
 			{
-				return this.rotation3 * 180f / (float)Math.PI;
+				return this.Rotation3 * 180f / (float)Math.PI;
 			}
 			set
 			{
-				this.rotation3 = value * (float)Math.PI / 180f;
+				this.Rotation3 = value * (float)Math.PI / 180f;
 			}
 		}
 
@@ -319,7 +322,7 @@ void main(){
 		{
 			get
 			{
-				return (this.Quaternion * new Vector4(Vector3.UnitZ)).Xyz;
+				return quaternion * Vector3.UnitZ;
 			}
 		}
 
@@ -335,7 +338,7 @@ void main(){
 		{
 			get
 			{
-				return (this.Quaternion * new Vector4(Vector3.UnitY)).Xyz;
+				return quaternion * Vector3.UnitY;
 			}
 		}
 
@@ -397,7 +400,7 @@ void main(){
 #else
                 		Matrix4.Scale(this.Scale.X, this.Scale.Y, this.Scale.Z) *
 #endif
-					Matrix4.CreateFromQuaternion(this.Rotation) *
+							   Matrix4.CreateFromQuaternion(this.Rotation) *
 
 							   Matrix4.CreateTranslation(Position);
 
@@ -494,7 +497,7 @@ void main(){
 
 			scale3 = Vector3.One;
 			position3 = Vector3.Zero;
-			rotation3 = Vector3.Zero;
+			quaternion = Quaternion.Identity;
 
 			this.vnBufferId = Graphics.NewBuffer();
 			Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
@@ -577,9 +580,7 @@ void main(){
 #else
                 Matrix4.Scale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #endif
-				Matrix4.CreateRotationZ(this.rotation3.Z) *
-				Matrix4.CreateRotationY(this.rotation3.Y) *
-				Matrix4.CreateRotationX(this.rotation3.X) *
+				Matrix4.CreateFromQuaternion(quaternion) *
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 
