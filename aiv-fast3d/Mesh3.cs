@@ -318,7 +318,7 @@ void main(){
 		{
 			get
 			{
-				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitZ;
+				return Quaternion * Vector3.UnitZ;
 			}
 		}
 
@@ -334,7 +334,7 @@ void main(){
 		{
 			get
 			{
-				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitY;
+				return Quaternion * Vector3.UnitY;
 			}
 		}
 
