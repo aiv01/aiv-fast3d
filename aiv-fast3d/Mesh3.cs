@@ -240,17 +240,17 @@ void main(){
 
 		private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, null, null, null);
 
-		private Quaternion quaternion;
+		private Vector3 internalRotation;
 
 		public Vector3 Rotation3
 		{
 			get
 			{
-				return Utils.QuaternionToRotation(quaternion);
+				return internalRotation;
 			}
 			set
 			{
-				quaternion = Quaternion.FromEulerAngles(value);
+				internalRotation = value;
 			}
 		}
 
@@ -297,12 +297,8 @@ void main(){
 		{
 			get
 			{
-				return quaternion;
+				return (Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
 
-			}
-			set
-			{
-				quaternion = value;
 			}
 		}
 
@@ -322,7 +318,7 @@ void main(){
 		{
 			get
 			{
-				return quaternion * Vector3.UnitZ;
+				return Quaternion * Vector3.UnitZ;
 			}
 		}
 
@@ -338,7 +334,7 @@ void main(){
 		{
 			get
 			{
-				return quaternion * Vector3.UnitY;
+				return Quaternion * Vector3.UnitY;
 			}
 		}
 
@@ -497,7 +493,7 @@ void main(){
 
 			scale3 = Vector3.One;
 			position3 = Vector3.Zero;
-			quaternion = Quaternion.Identity;
+			internalRotation = Vector3.Zero;
 
 			this.vnBufferId = Graphics.NewBuffer();
 			Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
@@ -580,7 +576,7 @@ void main(){
 #else
                 Matrix4.Scale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #endif
-				Matrix4.CreateFromQuaternion(quaternion) *
+				Matrix4.CreateFromQuaternion(Quaternion) *
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 

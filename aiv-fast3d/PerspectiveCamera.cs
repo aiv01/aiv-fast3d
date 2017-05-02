@@ -10,6 +10,7 @@ namespace Aiv.Fast3D
 {
 	public class PerspectiveCamera : Camera
 	{
+
 		private Vector3 position3;
 		public Vector3 Position3
 		{
@@ -27,7 +28,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return quaternion * Vector3.UnitZ;
+				return Quaternion * Vector3.UnitZ;
 			}
 		}
 
@@ -43,11 +44,12 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return quaternion * Vector3.UnitY;
+				return Quaternion * Vector3.UnitY;
 			}
 		}
 
-		private Quaternion quaternion;
+		private Vector3 internalRotation;
+
 		public Vector3 EulerRotation3
 		{
 			get
@@ -64,11 +66,11 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return Utils.QuaternionToRotation(quaternion);
+				return internalRotation;
 			}
 			set
 			{
-				quaternion = Quaternion.FromEulerAngles(value);
+				internalRotation = value;
 			}
 		}
 
@@ -76,12 +78,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return quaternion;
-			}
-
-			set
-			{
-				quaternion = value;
+				return (Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
 			}
 		}
 
@@ -101,7 +98,7 @@ namespace Aiv.Fast3D
 		public PerspectiveCamera(Vector3 position, Vector3 eulerRotation, float fov, float zNear, float zFar, float aspectRatio = 0)
 		{
 			this.position3 = position;
-			this.EulerRotation3 = eulerRotation;
+			this.internalRotation = eulerRotation * (float)(Math.PI / 180f);
 			this.fov = fov * (float)(Math.PI / 180f);
 			this.zNear = zNear;
 			this.zFar = zFar;

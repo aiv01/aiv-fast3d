@@ -51,7 +51,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			window.SetCursor(false);
 
-			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 30), new Vector3(0, 180, 0), 60, 0.01f, 1000);
+			PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 6, 30), new Vector3(-10, 180, 0), 60, 0.01f, 1000);
 
 			Texture crate = new Texture("Assets/crate.jpg");
 
@@ -175,10 +175,10 @@ namespace Aiv.Fast3D.Perspective.Example
 					camera.EulerRotation3 += new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
 				if (window.GetKey(KeyCode.P))
-					camera.EulerRotation3 -= new Vector3(90 + 45, 0, 0) * window.deltaTime;
+					camera.EulerRotation3 += new Vector3(90 + 45, 0, 0) * window.deltaTime;
 
 				if (window.GetKey(KeyCode.L))
-					camera.EulerRotation3 += new Vector3(90 + 45, 0, 0) * window.deltaTime;
+					camera.EulerRotation3 -= new Vector3(90 + 45, 0, 0) * window.deltaTime;
 
 
 				animationTimer -= window.deltaTime;
@@ -248,7 +248,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawShadowMap(directionalLight);
 				stormTrooper.Position3 = new Vector3(7, 0, 5);
-				stormTrooper.Quaternion = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
+				//stormTrooper.Quaternion = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
 				stormTrooper.DrawShadowMap(directionalLight);
 				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
 				cube.Position3 = new Vector3(0, 7, 0);
@@ -282,7 +282,7 @@ namespace Aiv.Fast3D.Perspective.Example
 				stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 				stormTrooper.Position3 = new Vector3(7, 0, 5);
-				stormTrooper.Quaternion = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
+				//stormTrooper.Quaternion = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
 				stormTrooper.DrawCel(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 

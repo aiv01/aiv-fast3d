@@ -14,62 +14,20 @@ namespace Aiv.Fast3D
 
 		public static Vector3 RotationToDirection(Vector3 axis)
 		{
-			Console.WriteLine(axis);
-			//Quaternion q = Quaternion.FromEulerAngles(axis);
-			//Quaternion q = Quaternion.FromAxisAngle(new Vector3(1, 0, 0), -60 * ((float)Math.PI / 180f));
-			Quaternion quat = Quaternion.FromEulerAngles(axis);
-			Console.WriteLine(QuaternionToEulerRotation(quat));
+			Quaternion quat = (Matrix3.CreateRotationZ(axis.Z) * Matrix3.CreateRotationY(axis.Y) * Matrix3.CreateRotationX(axis.X)).ExtractRotation();
 			Vector3 v = quat * Vector3.UnitZ;
 			return v;
-		}
-
-		public static Vector3 QuaternionToRotation(OpenTK.Quaternion q)
-		{
-			Vector3 v = Vector3.Zero;
-
-			v.Y = (float)Math.Atan2
-						(
-							2 * q.Y * q.W - 2 * q.X * q.Z,
-							   1 - 2 * Math.Pow(q.Y, 2) - 2 * Math.Pow(q.Z, 2)
-						);
-
-			v.X = (float)Math.Asin
-			(
-				2 * q.X * q.Y + 2 * q.Z * q.W
-
-			);
-
-			v.Z = (float)Math.Atan2
-						(
-							2 * q.X * q.W - 2 * q.Y * q.Z,
-							1 - 2 * Math.Pow(q.X, 2) - 2 * Math.Pow(q.Z, 2)
-						);
-
-			if (q.X * q.Y + q.Z * q.W == 0.5)
-			{
-				v.Y = (float)(2 * Math.Atan2(q.X, q.W));
-				v.Z = 0;
-			}
-
-			else if (q.X * q.Y + q.Z * q.W == -0.5)
-			{
-				v.Y = (float)(-2 * Math.Atan2(q.X, q.W));
-				v.Z = 0;
-			}
-
-			return v;
-		}
-
-		public static Vector3 QuaternionToEulerRotation(OpenTK.Quaternion q)
-		{
-			return QuaternionToRotation(q) * 180f / (float)Math.PI;
 		}
 
 		// taken from Unity
 		public static Quaternion LookAt(Vector3 forward, Vector3 up)
 		{
-			forward = Vector3.Normalize(forward);
-			Vector3 right = Vector3.Normalize(Vector3.Cross(up, forward));
+			// avoid NaN
+			if (forward != Vector3.Zero)
+				forward = forward.Normalized();
+			Vector3 right = Vector3.Cross(up, forward);
+			if (right != Vector3.Zero)
+				right = right.Normalized();
 			up = Vector3.Cross(forward, right);
 			var m00 = right.X;
 			var m01 = right.Y;
