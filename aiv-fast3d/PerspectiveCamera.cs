@@ -28,7 +28,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return Quaternion * Vector3.UnitZ;
+				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitZ;
 			}
 		}
 
@@ -44,7 +44,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return Quaternion * Vector3.UnitY;
+				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitY;
 			}
 		}
 
@@ -78,7 +78,7 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
-				return (Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
+				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
 			}
 		}
 

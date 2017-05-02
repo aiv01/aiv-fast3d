@@ -297,7 +297,7 @@ void main(){
 		{
 			get
 			{
-				return (Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
+				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
 
 			}
 		}
@@ -318,7 +318,7 @@ void main(){
 		{
 			get
 			{
-				return Quaternion * Vector3.UnitZ;
+				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitZ;
 			}
 		}
 
@@ -334,7 +334,7 @@ void main(){
 		{
 			get
 			{
-				return Quaternion * Vector3.UnitY;
+				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitY;
 			}
 		}
 
@@ -576,7 +576,7 @@ void main(){
 #else
                 Matrix4.Scale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #endif
-				Matrix4.CreateFromQuaternion(Quaternion) *
+				Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) *
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 
