@@ -22,8 +22,8 @@ namespace Aiv.Fast3D
 		// taken from Unity
 		public static Vector3 LookAt(Vector3 forward, Vector3 up)
 		{
-			float pitch = (float)Math.Asin(forward.Y);
-			float yaw = (float)Math.Atan2(forward.Y, forward.X);
+			float pitch = 0;
+			float yaw = (float)Math.Atan2(forward.X, forward.Z);
 			float roll = 0;
 
 			return new Vector3(pitch, yaw, roll);
