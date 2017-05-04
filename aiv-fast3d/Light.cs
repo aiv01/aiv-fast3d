@@ -21,8 +21,8 @@ namespace Aiv.Fast3D
 			}
 		}
 
-		protected Vector4 color;
-		public Vector4 Color
+		protected Vector3 color;
+		public Vector3 Color
 		{
 			get
 			{
@@ -36,6 +36,7 @@ namespace Aiv.Fast3D
 
 		public Light()
 		{
+			color = Vector3.One;
 		}
 	}
 }

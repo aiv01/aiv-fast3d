@@ -171,6 +171,7 @@ in vec3 vertex_position;
 out vec4 out_color;
 in vec4 shadow_position;
 
+uniform vec3 light_color;
 
 void main(){
 
@@ -197,7 +198,7 @@ void main(){
     out_color += color;
 
 	if (use_gouraud > 0.0) {
-		out_color = vec4(out_color.xyz * lambert, out_color.w);
+		out_color = vec4(out_color.xyz * light_color * lambert, out_color.w);
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
@@ -240,7 +241,7 @@ void main(){
 		}
 	
 		vec3 base_color = out_color.xyz;
-		out_color = vec4(base_color * (diffuse + ambient + specular), out_color.w);
+		out_color = vec4(base_color * light_color * (diffuse + ambient + specular), out_color.w);
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
@@ -690,6 +691,7 @@ void main(){
 			this.Bind();
 			this.shader.SetUniform("use_gouraud", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+            this.shader.SetUniform("light_color", light.Color);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
 			{
@@ -708,6 +710,7 @@ void main(){
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+            this.shader.SetUniform("light_color", light.Color);
 			this.shader.SetUniform("ambient", ambientColor);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
@@ -727,6 +730,7 @@ void main(){
 			this.Bind();
 			this.shader.SetUniform("use_cel", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+            this.shader.SetUniform("light_color", light.Color);
 			this.shader.SetUniform("ambient", ambientColor);
 			this.shader.SetUniform("shininess", 0f);
 			this.shader.SetUniform("threshold", threshold);
@@ -748,6 +752,7 @@ void main(){
 			this.Bind();
 			this.shader.SetUniform("use_gouraud", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+            this.shader.SetUniform("light_color", light.Color);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
 			{
@@ -766,6 +771,7 @@ void main(){
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+            this.shader.SetUniform("light_color", light.Color);
 			this.shader.SetUniform("ambient", ambientColor);
 			this.shader.SetUniform("shininess", shininess);
 			this.shader.SetUniform("shadow_bias", shadowBias);
@@ -786,6 +792,7 @@ void main(){
 			this.Bind();
 			this.shader.SetUniform("use_phong", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+            this.shader.SetUniform("light_color", light.Color);
 			this.shader.SetUniform("ambient", ambientColor);
 			this.shader.SetUniform("shadow_bias", shadowBias);
 			if (shadowMapTexture != null)
@@ -797,13 +804,13 @@ void main(){
 			}
 			if (specularMap != null)
 			{
-                this.shader.SetUniform("use_specular_map", 1f);
+				this.shader.SetUniform("use_specular_map", 1f);
 				specularMap.Bind(2);
-                this.shader.SetUniform("specular_tex", 2);
+				this.shader.SetUniform("specular_tex", 2);
 			}
 			this.DrawTexture(texture);
 			this.shader.SetUniform("use_phong", -1f);
-            this.shader.SetUniform("use_specular_map", -1f);
+			this.shader.SetUniform("use_specular_map", -1f);
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
@@ -812,6 +819,7 @@ void main(){
 			this.Bind();
 			this.shader.SetUniform("use_cel", 1f);
 			this.shader.SetUniform("light_vector", light.Vector);
+            this.shader.SetUniform("light_color", light.Color);
 			this.shader.SetUniform("ambient", ambientColor);
 			this.shader.SetUniform("shininess", 0f);
 			this.shader.SetUniform("threshold", threshold);

@@ -46,6 +46,8 @@ namespace Aiv.Fast3D.Perspective.Example
 			window.SetDefaultOrthographicSize(10);
 			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
 
+
+
 			window.EnableDepthTest();
 			//window.CullBackFaces();
 
@@ -100,6 +102,8 @@ namespace Aiv.Fast3D.Perspective.Example
 			DirectionalLight directionalLight = new DirectionalLight(Utils.EulerRotationToDirection(new Vector3(lightRotation, 180, 0)));
 			directionalLight.SetShadowProjection(-10, 10, -10, 10, -10, 20);
 
+			//directionalLight.Color = new Vector3(0.5f, 1, 0.5f);
+
 			float crateRotation = 0;
 
 			Mesh3[] botMesh = FbxLoader.Load("Assets/running.fbx", new Vector3(0.02f, 0.02f, 0.02f));
@@ -139,6 +143,8 @@ namespace Aiv.Fast3D.Perspective.Example
 			Mesh3[] tank = ObjLoader.Load("Assets/T34.obj", Vector3.One);
 			Texture tankDiffuse = new Texture("Assets/T-34.png");
 			Texture tankSpecular = new Texture("Assets/T-34_S.png");
+
+			window.AddPostProcessingEffect(new Sobel());
 
 			while (window.IsOpened)
 			{
@@ -330,6 +336,9 @@ namespace Aiv.Fast3D.Perspective.Example
 				logo.DrawTexture(logoAiv);
 
 				shadow.DrawTexture(shadowTexture);
+
+				// this ensure postprocessing works
+				window.DisableCullFaces();
 
 				window.Update();
 			}
