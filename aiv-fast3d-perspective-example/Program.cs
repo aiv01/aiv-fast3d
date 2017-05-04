@@ -136,6 +136,10 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			movingTrooper.SetParent(cube);
 
+			Mesh3[] tank = ObjLoader.Load("Assets/T34.obj", Vector3.One);
+			Texture tankDiffuse = new Texture("Assets/T-34.png");
+			Texture tankSpecular = new Texture("Assets/T-34_S.png");
+
 			while (window.IsOpened)
 			{
 
@@ -256,6 +260,14 @@ namespace Aiv.Fast3D.Perspective.Example
 				cube.EulerRotation3 = Vector3.Zero;
 				cube.Position3 = new Vector3(5, 1, 5);
 				cube.DrawShadowMap(directionalLight);
+
+
+				foreach (Mesh3 item in tank)
+				{
+					item.Position3 = new Vector3(-10, 0, 20);
+					item.DrawShadowMap(directionalLight);
+				}
+
 				window.DisableCullFaces();
 				window.RenderTo(null);
 
@@ -307,7 +319,12 @@ namespace Aiv.Fast3D.Perspective.Example
 				cube.DrawGouraud(new Vector4(0, 0, 1, 1), directionalLight, shadowTexture);
 
 
+				foreach (Mesh3 item in tank)
+				{
+					item.Position3 = new Vector3(-10, 0, 20);
+					item.DrawPhong(tankDiffuse, directionalLight, new Vector3(0.1f, 0.1f, 0.1f), tankSpecular);
 
+				}
 
 
 				logo.DrawTexture(logoAiv);

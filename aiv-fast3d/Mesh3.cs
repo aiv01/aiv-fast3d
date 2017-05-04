@@ -150,6 +150,9 @@ uniform float use_phong;
 uniform float use_depth;
 uniform float use_cel;
 
+uniform float use_specular_map;
+uniform sampler2D specular_tex;
+
 uniform float threshold;
 
 uniform float shadow_bias;
@@ -224,10 +227,20 @@ void main(){
 		// direction from vertex to camera
 		vec3 vertex_to_camera = normalize(camera_position - vertex_position);
 
-		float specular = max(0.0, dot(vertex_to_camera, light_reflection)) * shininess;
+		float specular_shininess = shininess;
+
+		if (use_specular_map > 0.0) {
+			specular_shininess = texture(specular_tex, uvout).x;
+		}
+
+		float specular = 0;
+
+		if (specular_shininess > 0.0) {
+			specular = pow(max(0.0, dot(vertex_to_camera, light_reflection)), specular_shininess);
+		}
 	
 		vec3 base_color = out_color.xyz;
-		out_color = vec4((base_color * diffuse) + (base_color * specular) + (base_color * ambient), out_color.w);
+		out_color = vec4(base_color * (diffuse + ambient + specular), out_color.w);
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
@@ -765,6 +778,32 @@ void main(){
 			}
 			this.DrawTexture(texture);
 			this.shader.SetUniform("use_phong", -1f);
+			this.shader.SetUniform("use_shadow_map", -1f);
+		}
+
+		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, Texture specularMap, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+		{
+			this.Bind();
+			this.shader.SetUniform("use_phong", 1f);
+			this.shader.SetUniform("light_vector", light.Vector);
+			this.shader.SetUniform("ambient", ambientColor);
+			this.shader.SetUniform("shadow_bias", shadowBias);
+			if (shadowMapTexture != null)
+			{
+				this.shader.SetUniform("use_shadow_map", 1f);
+				shadowMapTexture.Bind(1);
+				this.shader.SetUniform("shadow_map_tex", 1);
+				this.shader.SetUniform("depth_vp", light.ShadowProjection);
+			}
+			if (specularMap != null)
+			{
+                this.shader.SetUniform("use_specular_map", 1f);
+				specularMap.Bind(2);
+                this.shader.SetUniform("specular_tex", 2);
+			}
+			this.DrawTexture(texture);
+			this.shader.SetUniform("use_phong", -1f);
+            this.shader.SetUniform("use_specular_map", -1f);
 			this.shader.SetUniform("use_shadow_map", -1f);
 		}
 
