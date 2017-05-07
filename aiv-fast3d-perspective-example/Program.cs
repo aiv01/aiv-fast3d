@@ -93,14 +93,20 @@ namespace Aiv.Fast3D.Perspective.Example
 			float lightRotation = -30;
 
 
-			DepthTexture shadowTexture = new DepthTexture(2048, 2048, 24);
+			DepthTexture shadowTexture = new DepthTexture(4096, 4096, 24);
 
 			Sprite shadow = new Sprite(5, 5);
 			shadow.Camera = hudCamera;
 
+			float shadow_left = -30;
+			float shadow_right = 30;
+			float shadow_bottom = -30;
+			float shadow_top = 30;
+			float shadow_near = -30;
+			float shadow_far = 30;
 
 			DirectionalLight directionalLight = new DirectionalLight(Utils.EulerRotationToDirection(new Vector3(lightRotation, 180, 0)));
-			directionalLight.SetShadowProjection(-30, 30, -30, 30, -30, 50);
+			directionalLight.SetShadowProjection(shadow_left, shadow_right, shadow_bottom, shadow_top, shadow_near, shadow_far);
 
 			//directionalLight.Color = new Vector3(0.5f, 1, 0.5f);
 
@@ -152,12 +158,13 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			//window.AddPostProcessingEffect(new Sobel());
 
-
+			Vector3 pyramidRotation = Vector3.Zero;
 
 			PostProcessingEffect fxaa = window.AddPostProcessingEffect(new FXAA());
 
 			Plane plane = new Plane();
 
+			Vector3 shadowOffset = new Vector3(0, 0, 0.22f);
 
 			while (window.IsOpened)
 			{
@@ -206,7 +213,45 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				//fxaa.enabled = window.GetKey(KeyCode.X);
 
+				if (window.GetKey(KeyCode.Num1))
+				{
+					shadowOffset += Vector3.UnitX * 2 * window.deltaTime;
+					Console.WriteLine(shadowOffset);
+				}
 
+				if (window.GetKey(KeyCode.Num2))
+				{
+					shadowOffset -= Vector3.UnitX * 2 * window.deltaTime;
+					Console.WriteLine(shadowOffset);
+				}
+
+				if (window.GetKey(KeyCode.Num3))
+				{
+					shadowOffset += Vector3.UnitY * 2 * window.deltaTime;
+					Console.WriteLine(shadowOffset);
+				}
+
+				if (window.GetKey(KeyCode.Num4))
+				{
+					shadowOffset -= Vector3.UnitY * 2 * window.deltaTime;
+					Console.WriteLine(shadowOffset);
+				}
+
+				if (window.GetKey(KeyCode.Num5))
+				{
+					shadowOffset += Vector3.UnitZ * 0.2f * window.deltaTime;
+					Console.WriteLine(shadowOffset);
+				}
+
+				if (window.GetKey(KeyCode.Num6))
+				{
+					shadowOffset -= Vector3.UnitZ * 2 * window.deltaTime;
+					Console.WriteLine(shadowOffset);
+				}
+
+
+
+				directionalLight.SetShadowProjection(shadow_left, shadow_right, shadow_bottom, shadow_top, shadow_near, shadow_far);
 
 				animationTimer -= window.deltaTime;
 				if (animationTimer <= 0)
@@ -230,7 +275,7 @@ namespace Aiv.Fast3D.Perspective.Example
 					}
 				}
 
-
+				pyramidRotation += new Vector3(0, 10, 0) * window.deltaTime;
 				neckRotation += window.deltaTime;
 
 				string boneName = "mixamorig:Neck";
@@ -259,39 +304,41 @@ namespace Aiv.Fast3D.Perspective.Example
 				window.CullFrontFaces();
 				floor.DrawShadowMap(directionalLight);
 				pyramid.Scale3 = new Vector3(1, 2, 1);
-				pyramid.Position3 = new Vector3(-6, 2, 10);
+				pyramid.EulerRotation3 = pyramidRotation;
+				pyramid.Position3 = new Vector3(-6, 2, 10) + shadowOffset;
 				pyramid.DrawShadowMap(directionalLight);
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
-				pyramid.Position3 = new Vector3(-30, 2, 10);
+				pyramid.Rotation3 = Vector3.Zero;
+				pyramid.Position3 = new Vector3(-30, 2, 10) + shadowOffset;
 				pyramid.DrawShadowMap(directionalLight);
 
 
-				botMesh[0].Position3 = new Vector3(6, 0, 10);
+				botMesh[0].Position3 = new Vector3(6, 0, 10) + shadowOffset;
 				botMesh[0].DrawShadowMap(directionalLight);
-				botMesh[1].Position3 = new Vector3(6, 0, 10);
+				botMesh[1].Position3 = new Vector3(6, 0, 10) + shadowOffset;
 				botMesh[1].DrawShadowMap(directionalLight);
 
-				stormTrooper.Position3 = new Vector3(0, 0, 5);
+				stormTrooper.Position3 = new Vector3(0, 0, 5) + shadowOffset;
 				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawShadowMap(directionalLight);
-				stormTrooper.Position3 = new Vector3(-5, 0, 5);
+				stormTrooper.Position3 = new Vector3(-5, 0, 5) + shadowOffset;
 				stormTrooper.Rotation3 = Vector3.Zero;
 				stormTrooper.DrawShadowMap(directionalLight);
-				stormTrooper.Position3 = new Vector3(7, 0, 5);
+				stormTrooper.Position3 = new Vector3(7, 0, 5) + shadowOffset;
 				stormTrooper.Rotation3 = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
 				stormTrooper.DrawShadowMap(directionalLight);
 				cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
-				cube.Position3 = new Vector3(0, 7, 0);
+				cube.Position3 = new Vector3(0, 7, 0) + shadowOffset;
 				cube.DrawShadowMap(directionalLight);
 				cube.EulerRotation3 = Vector3.Zero;
-				cube.Position3 = new Vector3(5, 1, 5);
+				cube.Position3 = new Vector3(5, 1, 5) + shadowOffset;
 				cube.DrawShadowMap(directionalLight);
 
 
 				foreach (Mesh3 item in tank)
 				{
-					item.Position3 = new Vector3(-10, 0, 20);
+					item.Position3 = new Vector3(-10, 0, 20) + shadowOffset;
 					item.DrawShadowMap(directionalLight);
 				}
 
@@ -304,10 +351,12 @@ namespace Aiv.Fast3D.Perspective.Example
 				floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.5f, 0.5f, 0.5f), 0, shadowTexture);
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
+				pyramid.EulerRotation3 = pyramidRotation;
 				pyramid.Position3 = new Vector3(-6, 2, 10);
 				pyramid.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture);
 
 				pyramid.Scale3 = new Vector3(1, 2, 1);
+				pyramid.EulerRotation3 = Vector3.Zero;
 				pyramid.Position3 = new Vector3(-30, 2, 10);
 				pyramid.DrawGouraud(new Vector4(1, 1, 0, 1), directionalLight, shadowTexture);
 
