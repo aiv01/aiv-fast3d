@@ -6,19 +6,14 @@ namespace Aiv.Fast3D
 {
 	public class DepthTexture : RenderTexture
 	{
-		
-		public DepthTexture(int width, int height, int depthSize) : base(width, height)
-		{
-			
-			// this leaks a framebuffer object, but unfortunately
-			// it is the best solution for now
-			frameBuffer = Graphics.NewFrameBuffer();
-			Graphics.BindFrameBuffer(frameBuffer);
-			// fix texture type
-			Graphics.TextureDepth(width, height, depthSize);
-			Graphics.FrameBufferTextureDepth(this.Id);
 
-			Graphics.BindFrameBuffer(Graphics.GetDefaultFrameBuffer());
+		public DepthTexture(int width, int height, int depthSize, bool clampToBorder = true) : base(width, height, false, depthSize, true)
+		{
+			if (clampToBorder)
+			{
+				Graphics.TextureClampToBorderX(1f, 1f, 1f, 1f);
+				Graphics.TextureClampToBorderY(1f, 1f, 1f, 1f);
+			}
 		}
 	}
 }

@@ -21,8 +21,6 @@ void main() {
 	float x = 1.0 / width;
 	float y = 1.0 / height;
 
-	
-
 	vec4 horizontal = vec4(0.0);
 
 	// left bottom
@@ -76,7 +74,7 @@ void main() {
 }
 ";
 
-		public Sobel() : base(fragmentShader, null, true)
+		public Sobel() : base(fragmentShader, null, true, 24)
 		{
 
 		}

@@ -41,7 +41,7 @@
       <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="aiv-fast2d">
-      <HintPath>..\packages\Aiv.Fast2D.0.11.3\lib\net40\aiv-fast2d.dll</HintPath>
+      <HintPath>..\packages\Aiv.Fast2D.0.12.1\lib\net40\aiv-fast2d.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

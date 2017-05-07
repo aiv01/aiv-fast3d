@@ -1,5 +1,6 @@
 ﻿using System;
 using OpenTK;
+using Aiv.Fast2D;
 
 namespace Aiv.Fast3D
 {
@@ -21,7 +22,9 @@ namespace Aiv.Fast3D
 		{
 			get
 			{
+				PerspectiveCamera camera = (PerspectiveCamera)Window.Current.CurrentCamera;
 				return m * ortho;
+				return Matrix4.LookAt(-camera.Position3, -camera.Position3 + direction, Vector3.UnitY) * ortho;
 			}
 		}
 

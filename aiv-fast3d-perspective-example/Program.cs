@@ -42,7 +42,7 @@ namespace Aiv.Fast3D.Perspective.Example
 		static void Main(string[] args)
 		{
 
-			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 24, 4);
+			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 32, 0);
 			window.SetDefaultOrthographicSize(10);
 			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
 
@@ -68,7 +68,7 @@ namespace Aiv.Fast3D.Perspective.Example
 			Cube cube = new Cube();
 
 			Cube floor = new Cube();
-			floor.Scale3 = new Vector3(50, 50f, 50);
+			floor.Scale3 = new Vector3(150, 50f, 150);
 			floor.Position3 = new Vector3(0, -25, 0);
 
 			// tiling texture
@@ -93,14 +93,14 @@ namespace Aiv.Fast3D.Perspective.Example
 			float lightRotation = -30;
 
 
-			DepthTexture shadowTexture = new DepthTexture(1024, 1024, 24);
+			DepthTexture shadowTexture = new DepthTexture(2048, 2048, 32);
 
 			Sprite shadow = new Sprite(5, 5);
 			shadow.Camera = hudCamera;
 
 
 			DirectionalLight directionalLight = new DirectionalLight(Utils.EulerRotationToDirection(new Vector3(lightRotation, 180, 0)));
-			directionalLight.SetShadowProjection(-10, 10, -10, 10, -10, 20);
+			directionalLight.SetShadowProjection(-10, 10, -10, 10, -10, 10);
 
 			//directionalLight.Color = new Vector3(0.5f, 1, 0.5f);
 
@@ -144,7 +144,20 @@ namespace Aiv.Fast3D.Perspective.Example
 			Texture tankDiffuse = new Texture("Assets/T-34.png");
 			Texture tankSpecular = new Texture("Assets/T-34_S.png");
 
-			window.AddPostProcessingEffect(new Sobel());
+
+
+			//window.AddPostProcessingEffect(new DepthViewer());
+
+			window.AddPostProcessingEffect(new Fog());
+
+			//window.AddPostProcessingEffect(new Sobel());
+
+
+
+			PostProcessingEffect fxaa = window.AddPostProcessingEffect(new FXAA());
+
+			Plane plane = new Plane();
+
 
 			while (window.IsOpened)
 			{
@@ -189,6 +202,10 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				if (window.GetKey(KeyCode.L))
 					camera.EulerRotation3 -= new Vector3(90 + 45, 0, 0) * window.deltaTime;
+
+
+				//fxaa.enabled = window.GetKey(KeyCode.X);
+
 
 
 				animationTimer -= window.deltaTime;
@@ -245,6 +262,10 @@ namespace Aiv.Fast3D.Perspective.Example
 				pyramid.Position3 = new Vector3(-6, 2, 10);
 				pyramid.DrawShadowMap(directionalLight);
 
+				pyramid.Scale3 = new Vector3(1, 2, 1);
+				pyramid.Position3 = new Vector3(-30, 2, 10);
+				pyramid.DrawShadowMap(directionalLight);
+
 
 				botMesh[0].Position3 = new Vector3(6, 0, 10);
 				botMesh[0].DrawShadowMap(directionalLight);
@@ -285,6 +306,10 @@ namespace Aiv.Fast3D.Perspective.Example
 				pyramid.Scale3 = new Vector3(1, 2, 1);
 				pyramid.Position3 = new Vector3(-6, 2, 10);
 				pyramid.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture);
+
+				pyramid.Scale3 = new Vector3(1, 2, 1);
+				pyramid.Position3 = new Vector3(-30, 2, 10);
+				pyramid.DrawGouraud(new Vector4(1, 1, 0, 1), directionalLight, shadowTexture);
 
 				botMesh[0].Position3 = new Vector3(6, 0, 10);
 				botMesh[0].DrawGouraud(new Vector4(0, 0.8f, 1, 1), directionalLight, shadowTexture, 0.01f);
@@ -332,6 +357,10 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				}
 
+				plane.Position3 = new Vector3(-13, 5, 0);
+				plane.EulerRotation3 += Vector3.UnitY * 30 * window.deltaTime;
+				plane.DrawColor(new Vector4(1, 1, 0, 1));
+
 
 				logo.DrawTexture(logoAiv);
 
@@ -339,6 +368,10 @@ namespace Aiv.Fast3D.Perspective.Example
 
 				// this ensure postprocessing works
 				window.DisableCullFaces();
+
+				plane.Position3 = new Vector3(-10, 5, 0);
+				plane.EulerRotation3 += Vector3.UnitY * 30 * window.deltaTime;
+				plane.DrawColor(new Vector4(0, 1, 1, 1));
 
 				window.Update();
 			}

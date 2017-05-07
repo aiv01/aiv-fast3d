@@ -202,7 +202,7 @@ void main(){
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
-			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-shadow_bias) {
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-shadow_bias && shadow_projection.z <= 1.0) {
 				out_color = vec4(0, 0, 0, 1);
 			}
 		}
@@ -245,7 +245,7 @@ void main(){
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
-			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-shadow_bias) {
+			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-shadow_bias && shadow_projection.z <= 1.0) {
 				out_color = vec4(base_color.xyz * ambient, out_color.w) ;
 			}
 		}

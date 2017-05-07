@@ -45,13 +45,16 @@
       <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="aiv-fast2d">
-      <HintPath>..\packages\Aiv.Fast2D.0.11.3\lib\net40\aiv-fast2d.dll</HintPath>
+      <HintPath>..\..\aiv-fast2d\aiv-fast2d\bin\Release\aiv-fast2d.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sobel.cs" />
+    <Compile Include="FXAA.cs" />
+    <Compile Include="DepthViewer.cs" />
+    <Compile Include="Fog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
