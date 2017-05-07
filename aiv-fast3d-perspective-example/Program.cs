@@ -166,6 +166,8 @@ namespace Aiv.Fast3D.Perspective.Example
 
 			Vector3 shadowOffset = new Vector3(0, 0, 0.22f);
 
+			Sphere sphere = new Sphere(16, 24);
+
 			while (window.IsOpened)
 			{
 
@@ -410,6 +412,10 @@ namespace Aiv.Fast3D.Perspective.Example
 				plane.EulerRotation3 += Vector3.UnitY * 30 * window.deltaTime;
 				plane.DrawColor(new Vector4(1, 1, 0, 1));
 
+
+				sphere.Position3 = new Vector3(0, 3, 10);
+				sphere.Scale3 = new Vector3(10);
+				sphere.DrawWireframe(new Vector4(1, 0, 0, 1));
 
 				logo.DrawTexture(logoAiv);
 
