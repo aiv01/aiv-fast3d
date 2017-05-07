@@ -42,7 +42,7 @@ namespace Aiv.Fast3D.Perspective.Example
 		static void Main(string[] args)
 		{
 
-			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 32, 0);
+			Window window = new Window(1024, 768, "Aiv.Fast3D Perspective Test", false, 24, 0);
 			window.SetDefaultOrthographicSize(10);
 			//Window window = new Window("Aiv.Fast3D Perspective Test", 24, 4);
 
@@ -93,14 +93,14 @@ namespace Aiv.Fast3D.Perspective.Example
 			float lightRotation = -30;
 
 
-			DepthTexture shadowTexture = new DepthTexture(2048, 2048, 32);
+			DepthTexture shadowTexture = new DepthTexture(2048, 2048, 24);
 
 			Sprite shadow = new Sprite(5, 5);
 			shadow.Camera = hudCamera;
 
 
 			DirectionalLight directionalLight = new DirectionalLight(Utils.EulerRotationToDirection(new Vector3(lightRotation, 180, 0)));
-			directionalLight.SetShadowProjection(-10, 10, -10, 10, -10, 10);
+			directionalLight.SetShadowProjection(-30, 30, -30, 30, -30, 50);
 
 			//directionalLight.Color = new Vector3(0.5f, 1, 0.5f);
 
