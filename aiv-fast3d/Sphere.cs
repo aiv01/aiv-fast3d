@@ -4,80 +4,132 @@ using System.Collections.Generic;
 
 namespace Aiv.Fast3D
 {
-	public class Sphere : Mesh3
-	{
-		public Sphere(int horizontal, int vertical)
-		{
-			List<Vector3> vertices = new List<Vector3>();
+    public class Sphere : Mesh3
+    {
+        public Sphere(int segments = 32)
+        {
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
 
-			float pi = (float)Math.PI;
-			float pi2 = pi * 2;
-			float radius = 0.5f;
+            float pi = (float)Math.PI;
+            float pi2 = pi * 2;
+            float radius = 0.5f;
 
-			// top vertex
-			vertices.Add(Vector3.UnitY * radius);
+            int verticalSteps = segments + 2;
+            int horizontalSteps = verticalSteps * 2;
 
-			for (int i = 0; i < vertical; i++)
-			{
-				float a1 = pi * (i + 1) / (vertical + 1);
-				float sin1 = (float)Math.Sin(a1);
-				float cos1 = (float)Math.Cos(a1);
+            for (int i = 0; i <= verticalSteps; i++)
+            {
+                float verticalStep = (float)i / (float)verticalSteps;
+                float verticalAngle = verticalStep * pi;
 
-				for (int j = 0; j < horizontal; j++)
-				{
+                for (int j = 0; j <= horizontalSteps; j++)
+                {
+                    float horizontalStep = (float)j / (float)horizontalSteps;
+                    float horizontalAngle = horizontalStep * pi2;
 
-					float a2 = pi2 * j / horizontal;
-					float sin2 = (float)Math.Sin(a2);
-					float cos2 = (float)Math.Cos(a2);
+                    Vector3 v = Matrix3.CreateRotationZ(-verticalAngle) * Vector3.UnitY;
+                    v = Matrix3.CreateRotationY(horizontalAngle) * v;
 
-					vertices.Add(new Vector3(sin1 * cos2, cos1, sin1 * sin2) * radius);
-				}
-			}
+                    vertices.Add(v * -radius);
 
-			// bottom vertex
-			vertices.Add(Vector3.UnitY * -radius);
+                    normals.Add(-v.Normalized());
 
-			this.v = new float[horizontal * 3 * 3];
-			this.vn = new float[this.v.Length];
-			this.uv = new float[(this.v.Length / 3) * 2];
+                    uvs.Add(new Vector2(horizontalStep, 1-verticalStep));
+                }
+            }
 
-			int index = 1;
-			int pos = 0;
-			for (int j = 0; j < horizontal; j++)
-			{
-				// top
-				this.v[pos++] = vertices[0].X;
-				this.v[pos++] = vertices[0].Y;
-				this.v[pos++] = vertices[0].Z;
+            int vpos = 0;
+            int npos = 0;
+            int uvpos = 0;
 
-				int rightIndex = index + 1;
-				if (rightIndex >= horizontal - 1)
-					rightIndex = 1;
+            this.v = new float[vertices.Count * 3 * 3 * 2];
+            this.vn = new float[vertices.Count * 3 * 3 * 2];
+            this.uv = new float[vertices.Count * 2 * 3 * 2];
 
-				// right
-				this.v[pos++] = vertices[rightIndex].X;
-				this.v[pos++] = vertices[rightIndex].Y;
-				this.v[pos++] = vertices[rightIndex].Z;
+            for (int i = 0; i <= verticalSteps; i++)
+            {
+                int index = (i * verticalSteps + 1) * (horizontalSteps + 1);
+                for (; (index + horizontalSteps + 2) < vertices.Count; index++)
+                {
+                    // vertices [1]
+                    this.v[vpos++] = vertices[index + 1].X;
+                    this.v[vpos++] = vertices[index + 1].Y;
+                    this.v[vpos++] = vertices[index + 1].Z;
 
-				// left
-				this.v[pos++] = vertices[index].X;
-				this.v[pos++] = vertices[index].Y;
-				this.v[pos++] = vertices[index].Z;
+                    this.v[vpos++] = vertices[index].X;
+                    this.v[vpos++] = vertices[index].Y;
+                    this.v[vpos++] = vertices[index].Z;
 
-				index++;
-			}
+                    this.v[vpos++] = vertices[index + horizontalSteps + 1].X;
+                    this.v[vpos++] = vertices[index + horizontalSteps + 1].Y;
+                    this.v[vpos++] = vertices[index + horizontalSteps + 1].Z;
 
-			// normals
-			for (int i = 0; i < this.vn.Length; i += 3)
-			{
-				Vector3 normalized = new Vector3(this.v[i], this.v[i + 1], this.v[i + 2]).Normalized();
-				this.vn[i] = normalized.X;
-				this.vn[i + 1] = normalized.Y;
-				this.vn[i + 2] = normalized.Z;
-			}
+                    // normals [1]
+                    this.vn[npos++] = normals[index + 1].X;
+                    this.vn[npos++] = normals[index + 1].Y;
+                    this.vn[npos++] = normals[index + 1].Z;
 
-			this.Update();
-			this.UpdateNormals();
-		}
-	}
+                    this.vn[npos++] = normals[index].X;
+                    this.vn[npos++] = normals[index].Y;
+                    this.vn[npos++] = normals[index].Z;
+
+                    this.vn[npos++] = normals[index + horizontalSteps + 1].X;
+                    this.vn[npos++] = normals[index + horizontalSteps + 1].Y;
+                    this.vn[npos++] = normals[index + horizontalSteps + 1].Z;
+
+                    // uvs [1]
+                    this.uv[uvpos++] = uvs[index + 1].X;
+                    this.uv[uvpos++] = uvs[index + 1].Y;
+
+                    this.uv[uvpos++] = uvs[index].X;
+                    this.uv[uvpos++] = uvs[index].Y;
+
+                    this.uv[uvpos++] = uvs[index + horizontalSteps + 1].X;
+                    this.uv[uvpos++] = uvs[index + horizontalSteps + 1].Y;
+
+                    // vertices [2]
+                    this.v[vpos++] = vertices[index + 1].X;
+                    this.v[vpos++] = vertices[index + 1].Y;
+                    this.v[vpos++] = vertices[index + 1].Z;
+
+                    this.v[vpos++] = vertices[index + horizontalSteps + 1].X;
+                    this.v[vpos++] = vertices[index + horizontalSteps + 1].Y;
+                    this.v[vpos++] = vertices[index + horizontalSteps + 1].Z;
+
+                    this.v[vpos++] = vertices[index + horizontalSteps + 2].X;
+                    this.v[vpos++] = vertices[index + horizontalSteps + 2].Y;
+                    this.v[vpos++] = vertices[index + horizontalSteps + 2].Z;
+
+                    // normals [2]
+                    this.vn[npos++] = normals[index + 1].X;
+                    this.vn[npos++] = normals[index + 1].Y;
+                    this.vn[npos++] = normals[index + 1].Z;
+
+                    this.vn[npos++] = normals[index + horizontalSteps + 1].X;
+                    this.vn[npos++] = normals[index + horizontalSteps + 1].Y;
+                    this.vn[npos++] = normals[index + horizontalSteps + 1].Z;
+
+                    this.vn[npos++] = normals[index + horizontalSteps + 2].X;
+                    this.vn[npos++] = normals[index + horizontalSteps + 2].Y;
+                    this.vn[npos++] = normals[index + horizontalSteps + 2].Z;
+
+                    // uvs [2]
+                    this.uv[uvpos++] = uvs[index + 1].X;
+                    this.uv[uvpos++] = uvs[index + 1].Y;
+
+                    this.uv[uvpos++] = uvs[index + horizontalSteps + 1].X;
+                    this.uv[uvpos++] = uvs[index + horizontalSteps + 1].Y;
+
+                    this.uv[uvpos++] = uvs[index + horizontalSteps + 2].X;
+                    this.uv[uvpos++] = uvs[index + horizontalSteps + 2].Y;
+
+                }
+            }
+
+            this.Update();
+            this.UpdateNormals();
+        }
+    }
 }
