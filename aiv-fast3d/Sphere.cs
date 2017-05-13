@@ -6,6 +6,14 @@ namespace Aiv.Fast3D
 {
     public class Sphere : Mesh3
     {
+        public float Radius
+        {
+            get
+            {
+                return this.Scale3.X * 0.5f;
+            }
+        }
+
         public Sphere(int segments = 32)
         {
             List<Vector3> vertices = new List<Vector3>();
