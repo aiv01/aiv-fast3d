@@ -8,117 +8,131 @@ using OpenTK;
 
 namespace Aiv.Fast3D
 {
-	public class PerspectiveCamera : Camera
-	{
+    public class PerspectiveCamera : Camera
+    {
 
-		private Vector3 position3;
-		public Vector3 Position3
-		{
-			get
-			{
-				return this.position3;
-			}
-			set
-			{
-				this.position3 = value;
-			}
-		}
+        private Vector3 position3;
+        public Vector3 Position3
+        {
+            get
+            {
+                return this.position3;
+            }
+            set
+            {
+                this.position3 = value;
+            }
+        }
 
-		public Vector3 Forward
-		{
-			get
-			{
-				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitZ;
-			}
-		}
+        public Vector3 Forward
+        {
+            get
+            {
+                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitZ;
+            }
+        }
 
-		public Vector3 Right
-		{
-			get
-			{
-				return Vector3.Cross(Forward, Up);
-			}
-		}
+        public Vector3 Right
+        {
+            get
+            {
+                return Vector3.Cross(Forward, Up);
+            }
+        }
 
-		public Vector3 Up
-		{
-			get
-			{
-				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitY;
-			}
-		}
+        public Vector3 Up
+        {
+            get
+            {
+                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitY;
+            }
+        }
 
-		private Vector3 internalRotation;
+        private Vector3 internalRotation;
 
-		public Vector3 EulerRotation3
-		{
-			get
-			{
-				return Rotation3 * (float)(180f / Math.PI);
-			}
-			set
-			{
-				Rotation3 = value * (float)(Math.PI / 180f);
-			}
-		}
+        public Vector3 EulerRotation3
+        {
+            get
+            {
+                return Rotation3 * (float)(180f / Math.PI);
+            }
+            set
+            {
+                Rotation3 = value * (float)(Math.PI / 180f);
+            }
+        }
 
-		public Vector3 Rotation3
-		{
-			get
-			{
-				return internalRotation;
-			}
-			set
-			{
-				internalRotation = value;
-			}
-		}
+        public Vector3 Rotation3
+        {
+            get
+            {
+                return internalRotation;
+            }
+            set
+            {
+                internalRotation = value;
+            }
+        }
 
-		public Quaternion Quaternion
-		{
-			get
-			{
-				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
-			}
-		}
+        public Quaternion Quaternion
+        {
+            get
+            {
+                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
+            }
+        }
 
-		private float fov;
-		private float zNear;
-		private float zFar;
-		private float aspectRatio;
+        private float fov;
+        private float zNear;
+        private float zFar;
+        private float aspectRatio;
 
-		public override bool HasProjection
-		{
-			get
-			{
-				return true;
-			}
-		}
+        public override bool HasProjection
+        {
+            get
+            {
+                return true;
+            }
+        }
 
-		public PerspectiveCamera(Vector3 position, Vector3 eulerRotation, float fov, float zNear, float zFar, float aspectRatio = 0)
-		{
-			this.position3 = position;
-			this.internalRotation = eulerRotation * (float)(Math.PI / 180f);
-			this.fov = fov * (float)(Math.PI / 180f);
-			this.zNear = zNear;
-			this.zFar = zFar;
-			this.aspectRatio = aspectRatio;
-			if (this.aspectRatio == 0)
-			{
-				this.aspectRatio = Window.Current.aspectRatio;
-			}
-		}
+        public Vector3 ScreenPointToDirection(Vector2 screenPoint)
+        {
+            return ScreenPointToDirection(screenPoint.X, screenPoint.Y);
+        }
 
-		public override Matrix4 Matrix()
-		{
-			return Matrix4.LookAt(position3, position3 + this.Forward, this.Up);
+        public Vector3 ScreenPointToDirection(float x, float y)
+        {
+            Vector4 eye = ProjectionMatrix().Inverted() * new Vector4(x, y, -1, 1);
 
-		}
+            eye = new Vector4(eye.X, eye.Y, -1, 0);
 
-		public override Matrix4 ProjectionMatrix()
-		{
-			float fovY = fov / aspectRatio;
-			return Matrix4.CreatePerspectiveFieldOfView(fovY, aspectRatio, zNear, zFar);
-		}
-	}
+            return (Matrix().Inverted() * eye).Xyz.Normalized();
+        }
+
+        public PerspectiveCamera(Vector3 position, Vector3 eulerRotation, float fov, float zNear, float zFar, float aspectRatio = 0)
+        {
+            this.position3 = position;
+            this.internalRotation = eulerRotation * (float)(Math.PI / 180f);
+            this.fov = fov * (float)(Math.PI / 180f);
+            this.zNear = zNear;
+            this.zFar = zFar;
+            this.aspectRatio = aspectRatio;
+            if (this.aspectRatio == 0)
+            {
+                this.aspectRatio = Window.Current.aspectRatio;
+            }
+        }
+
+        public override Matrix4 Matrix()
+        {
+            return Matrix4.LookAt(position3, position3 + this.Forward, this.Up);
+
+        }
+
+        public override Matrix4 ProjectionMatrix()
+        {
+            float fovY = fov / aspectRatio;
+            return Matrix4.CreatePerspectiveFieldOfView(fovY, aspectRatio, zNear, zFar);
+        }
+    }
 }

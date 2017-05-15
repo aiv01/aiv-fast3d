@@ -51,7 +51,7 @@ namespace Aiv.Fast3D.Perspective.Example
             window.EnableDepthTest();
             //window.CullBackFaces();
 
-            window.SetCursor(false);
+            //window.SetCursor(false);
 
             PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 6, 30), new Vector3(-10, 180, 0), 60, 0.01f, 1000);
 
@@ -156,7 +156,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
             window.AddPostProcessingEffect(new Fog());
 
-            //window.AddPostProcessingEffect(new Sobel());
+            window.AddPostProcessingEffect(new Sobel());
 
             Vector3 pyramidRotation = Vector3.Zero;
 
@@ -214,7 +214,7 @@ namespace Aiv.Fast3D.Perspective.Example
                     camera.EulerRotation3 -= new Vector3(90 + 45, 0, 0) * window.deltaTime;
 
 
-                //fxaa.enabled = window.GetKey(KeyCode.X);
+                fxaa.enabled = !window.GetKey(KeyCode.X);
 
                 if (window.GetKey(KeyCode.Num1))
                 {
@@ -294,6 +294,17 @@ namespace Aiv.Fast3D.Perspective.Example
                     bone.Rotation = Quaternion.FromEulerAngles(new Vector3(0, (float)Math.Sin(neckRotation) / 2, 0));
                 }
 
+
+                if (window.mouseLeft)
+                {
+                    float x = window.mouseX * (1f / window.OrthoWidth);
+                    float y = 1 - (window.mouseY * (1f / window.OrthoHeight));
+                    x = (2 * x) - 1;
+                    y = (2 * y) - 1;
+                    Console.WriteLine(x + "," + y);
+                    Vector3 direction = camera.ScreenPointToDirection(x, y);
+                    Console.WriteLine(direction);
+                }
 
 
                 crateRotation += 30 * window.deltaTime;
