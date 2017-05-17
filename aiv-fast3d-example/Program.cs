@@ -116,6 +116,12 @@ namespace Aiv.Fast3D.Example
 
 			mesh3.Scale3 = new Vector3(0.5f, 0.5f, 0.5f);
 
+            float mesh3Pitch = 0f;
+            float mesh3Yaw = 0f;
+
+            float suzanneYaw = 0f;
+
+            float stormTrooperYaw = 0f;
 
 			while (window.opened)
 			{
@@ -124,14 +130,19 @@ namespace Aiv.Fast3D.Example
 
 				if (window.GetKey(KeyCode.Up))
 				{
-					mesh3.EulerRotation3 += new Vector3(-20 * window.deltaTime, 0, 0);
-					suzanne.EulerRotation3 += new Vector3(0, -30 * window.deltaTime, 0);
-					stormTrooper.EulerRotation3 += new Vector3(0, 30 * window.deltaTime, 0);
+                    mesh3Pitch      += -20 * window.deltaTime;
+                    suzanneYaw      += -30 * window.deltaTime;
+                    stormTrooperYaw +=  30 * window.deltaTime;
 				}
 
 				mesh3.Position3 = new Vector3(130, 130, 100);
-				mesh3.Scale3 = new Vector3(0.5f, 0.5f, 0.5f);
-				mesh3.EulerRotation3 += new Vector3(0, -10 * window.deltaTime, 0);
+				mesh3.Scale3    = new Vector3(0.5f, 0.5f, 0.5f);
+
+                mesh3Yaw        += -10 * window.deltaTime;
+
+				mesh3.SetEulerRotation(mesh3Pitch, mesh3Yaw, 0f);
+				suzanne.SetEulerRotation(0f, suzanneYaw, 0f);
+				stormTrooper.SetEulerRotation(0f, stormTrooperYaw, 0f);
 
 				background.DrawTexture(backgroundTexture);
 

@@ -254,18 +254,17 @@ void main(){
 
 		private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, null, null, null);
 
-		private Vector3 internalRotation;
-
-		public Vector3 Rotation3
+		private Quaternion internalRotation;
+		public Quaternion Quaternion
 		{
 			get
 			{
-				return internalRotation;
+                return internalRotation;
 			}
-			set
-			{
-				internalRotation = value;
-			}
+            set
+            {
+                internalRotation = value;
+            }
 		}
 
 		private Vector3 position3;
@@ -304,27 +303,6 @@ void main(){
 			set
 			{
 				pivot3 = value;
-			}
-		}
-
-		public Quaternion Quaternion
-		{
-			get
-			{
-				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
-
-			}
-		}
-
-		public Vector3 EulerRotation3
-		{
-			get
-			{
-				return this.Rotation3 * 180f / (float)Math.PI;
-			}
-			set
-			{
-				this.Rotation3 = value * (float)Math.PI / 180f;
 			}
 		}
 
@@ -507,7 +485,7 @@ void main(){
 
 			scale3 = Vector3.One;
 			position3 = Vector3.Zero;
-			internalRotation = Vector3.Zero;
+			internalRotation = Quaternion.Identity;
 
 			this.vnBufferId = Graphics.NewBuffer();
 			Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
@@ -551,7 +529,31 @@ void main(){
 			};
 		}
 
-		public void UpdateNormals()
+        public void SetEulerRotation(Vector3 pitchYawRoll)
+        {
+
+            float degToRad = (float)Math.PI / 180f;
+            pitchYawRoll *= degToRad;
+            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
+        }
+
+        public void SetEulerRotation(float pitch, float yaw, float roll)
+        {
+            float degToRad = (float)Math.PI / 180f;
+            internalRotation = (Matrix3.CreateRotationX(pitch * degToRad) * Matrix3.CreateRotationZ(roll * degToRad) * Matrix3.CreateRotationY(yaw * degToRad)).ExtractRotation();
+        }
+
+        public void SetRotation(Vector3 pitchYawRoll)
+        {
+            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
+        }
+
+        public void SetRotation(float pitch, float yaw, float roll)
+        {
+            internalRotation = (Matrix3.CreateRotationX(pitch) * Matrix3.CreateRotationZ(roll) * Matrix3.CreateRotationY(yaw)).ExtractRotation();
+        }
+
+        public void UpdateNormals()
 		{
 			if (this.vn == null)
 				return;
@@ -590,7 +592,7 @@ void main(){
 #else
                 Matrix4.Scale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #endif
-				Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) *
+				Matrix4.CreateFromQuaternion(Quaternion) *
 				// here we do not re-add the pivot, so translation is pivot based too
 				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 

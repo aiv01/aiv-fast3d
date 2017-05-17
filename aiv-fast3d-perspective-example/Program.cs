@@ -53,7 +53,8 @@ namespace Aiv.Fast3D.Perspective.Example
 
             window.SetCursor(false);
 
-            PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 6, 30), new Vector3(-10, 180, 0), 60, 0.01f, 1000);
+            Vector3 cameraEuler = new Vector3(-10, 180, 0);
+            PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 6, 30), cameraEuler, 60, 0.01f, 1000);
 
             Texture crate = new Texture("Assets/crate.jpg");
 
@@ -121,6 +122,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
             Mesh3 movingTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
             movingTrooper.Position3 = new Vector3(0, 0, 2);
+            Vector3 movingTrooperRotation = new Vector3();
 
             foreach (SkeletalAnimation animation in animations)
             {
@@ -163,10 +165,12 @@ namespace Aiv.Fast3D.Perspective.Example
             PostProcessingEffect fxaa = window.AddPostProcessingEffect(new FXAA());
 
             Plane plane = new Plane();
+            Vector3 planeEuler = new Vector3();
 
             Vector3 shadowOffset = new Vector3(0, 0, 0.22f);
 
             Sphere sphere = new Sphere();
+            Vector3 sphereEuler = new Vector3();
             Texture world = new Texture("Assets/world.jpg");
 
             while (window.IsOpened)
@@ -202,17 +206,18 @@ namespace Aiv.Fast3D.Perspective.Example
                 }
 
                 if (window.GetKey(KeyCode.Right))
-                    camera.EulerRotation3 += new Vector3(0, 90 + 45, 0) * window.deltaTime;
+                    cameraEuler += new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
                 if (window.GetKey(KeyCode.Left))
-                    camera.EulerRotation3 -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
+                    cameraEuler -= new Vector3(0, 90 + 45, 0) * window.deltaTime;
 
                 if (window.GetKey(KeyCode.P))
-                    camera.EulerRotation3 += new Vector3(90 + 45, 0, 0) * window.deltaTime;
+                    cameraEuler += new Vector3(90 + 45, 0, 0) * window.deltaTime;
 
                 if (window.GetKey(KeyCode.L))
-                    camera.EulerRotation3 -= new Vector3(90 + 45, 0, 0) * window.deltaTime;
+                    cameraEuler -= new Vector3(90 + 45, 0, 0) * window.deltaTime;
 
+                camera.SetEulerRotation(cameraEuler);
 
                 //fxaa.enabled = window.GetKey(KeyCode.X);
 
@@ -307,12 +312,12 @@ namespace Aiv.Fast3D.Perspective.Example
                 window.CullFrontFaces();
                 floor.DrawShadowMap(directionalLight);
                 pyramid.Scale3 = new Vector3(1, 2, 1);
-                pyramid.EulerRotation3 = pyramidRotation;
+                pyramid.SetEulerRotation(pyramidRotation);
                 pyramid.Position3 = new Vector3(-6, 2, 10) + shadowOffset;
                 pyramid.DrawShadowMap(directionalLight);
 
                 pyramid.Scale3 = new Vector3(1, 2, 1);
-                pyramid.Rotation3 = Vector3.Zero;
+                pyramid.SetRotation(Vector3.Zero);
                 pyramid.Position3 = new Vector3(-30, 2, 10) + shadowOffset;
                 pyramid.DrawShadowMap(directionalLight);
 
@@ -323,18 +328,18 @@ namespace Aiv.Fast3D.Perspective.Example
                 botMesh[1].DrawShadowMap(directionalLight);
 
                 stormTrooper.Position3 = new Vector3(0, 0, 5) + shadowOffset;
-                stormTrooper.Rotation3 = Vector3.Zero;
+                stormTrooper.SetRotation(Vector3.Zero);
                 stormTrooper.DrawShadowMap(directionalLight);
                 stormTrooper.Position3 = new Vector3(-5, 0, 5) + shadowOffset;
-                stormTrooper.Rotation3 = Vector3.Zero;
+                stormTrooper.SetRotation(Vector3.Zero);
                 stormTrooper.DrawShadowMap(directionalLight);
                 stormTrooper.Position3 = new Vector3(7, 0, 5) + shadowOffset;
-                stormTrooper.Rotation3 = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
+                stormTrooper.SetRotation(Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized()));
                 stormTrooper.DrawShadowMap(directionalLight);
-                cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
+                cube.SetEulerRotation(new Vector3(0, crateRotation, 0));
                 cube.Position3 = new Vector3(0, 7, 0) + shadowOffset;
                 cube.DrawShadowMap(directionalLight);
-                cube.EulerRotation3 = Vector3.Zero;
+                cube.SetEulerRotation(Vector3.Zero);
                 cube.Position3 = new Vector3(5, 1, 5) + shadowOffset;
                 cube.DrawShadowMap(directionalLight);
 
@@ -354,12 +359,12 @@ namespace Aiv.Fast3D.Perspective.Example
                 floor.DrawPhong(floorTexture, directionalLight, new Vector3(0.5f, 0.5f, 0.5f), 0, shadowTexture);
 
                 pyramid.Scale3 = new Vector3(1, 2, 1);
-                pyramid.EulerRotation3 = pyramidRotation;
+                pyramid.SetEulerRotation(pyramidRotation);
                 pyramid.Position3 = new Vector3(-6, 2, 10);
                 pyramid.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture);
 
                 pyramid.Scale3 = new Vector3(1, 2, 1);
-                pyramid.EulerRotation3 = Vector3.Zero;
+                pyramid.SetEulerRotation(Vector3.Zero);
                 pyramid.Position3 = new Vector3(-30, 2, 10);
                 pyramid.DrawGouraud(new Vector4(1, 1, 0, 1), directionalLight, shadowTexture);
 
@@ -369,20 +374,20 @@ namespace Aiv.Fast3D.Perspective.Example
                 botMesh[1].DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture, 0.01f);
 
                 stormTrooper.Position3 = new Vector3(0, 0, 5);
-                stormTrooper.Rotation3 = Vector3.Zero;
+                stormTrooper.SetRotation(Vector3.Zero);
                 stormTrooper.DrawGouraud(stormTrooperTexture, directionalLight, shadowTexture);
 
                 stormTrooper.Position3 = new Vector3(-5, 0, 5);
-                stormTrooper.Rotation3 = Vector3.Zero;
+                stormTrooper.SetRotation(Vector3.Zero);
                 stormTrooper.DrawPhong(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
                 stormTrooper.Position3 = new Vector3(7, 0, 5);
-                stormTrooper.Rotation3 = Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized());
+                stormTrooper.SetRotation(Utils.LookAt((camera.Position3 - stormTrooper.Position3).Normalized()));
                 stormTrooper.DrawCel(stormTrooperTexture, directionalLight, new Vector3(0, 0.1f, 0), 0.75f, shadowTexture);
 
 
                 //cube.DrawColor(new Vector4(1, 0, 0, 1));
-                cube.EulerRotation3 = new Vector3(0, crateRotation, 0);
+                cube.SetEulerRotation(new Vector3(0, crateRotation, 0));
                 cube.Position3 = new Vector3(0, 7, 0);
                 cube.DrawTexture(crate);
 
@@ -390,14 +395,15 @@ namespace Aiv.Fast3D.Perspective.Example
                     movingTrooper.Position3 += movingTrooper.Forward * window.deltaTime * 2;
 
                 if (window.GetKey(KeyCode.G))
-                    movingTrooper.EulerRotation3 += new Vector3(0, 90, 0) * window.deltaTime;
+                    movingTrooperRotation += new Vector3(0, 90, 0) * window.deltaTime;
 
                 if (window.GetKey(KeyCode.H))
-                    movingTrooper.EulerRotation3 -= new Vector3(0, 90, 0) * window.deltaTime;
+                    movingTrooperRotation -= new Vector3(0, 90, 0) * window.deltaTime;
+                movingTrooper.SetEulerRotation(movingTrooperRotation);
 
                 movingTrooper.DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight);
 
-                cube.EulerRotation3 = Vector3.Zero;
+                cube.SetEulerRotation(Vector3.Zero);
                 cube.Position3 = new Vector3(5, 1, 5);
                 cube.DrawGouraud(new Vector4(0, 0, 1, 1), directionalLight, shadowTexture);
 
@@ -410,11 +416,12 @@ namespace Aiv.Fast3D.Perspective.Example
                 }
 
                 plane.Position3 = new Vector3(-13, 5, 0);
-                plane.EulerRotation3 += Vector3.UnitY * 30 * window.deltaTime;
+                planeEuler += Vector3.UnitY * 30 * window.deltaTime;
                 plane.DrawColor(new Vector4(1, 1, 0, 1));
 
                 sphere.Position3 = new Vector3(-5, 2, 20);
-                sphere.EulerRotation3 += Vector3.UnitY * 10 * window.deltaTime;
+                sphereEuler += Vector3.UnitY * 10 * window.deltaTime;
+                sphere.SetEulerRotation(sphereEuler);
                 sphere.Scale3 = new Vector3(3);
                 sphere.DrawPhong(world, directionalLight, new Vector3(0.2f, 0.2f, 0.2f));
                 //sphere.DrawColor(new Vector4(1, 0, 0, 1));
@@ -427,7 +434,8 @@ namespace Aiv.Fast3D.Perspective.Example
                 window.DisableCullFaces();
 
                 plane.Position3 = new Vector3(-10, 5, 0);
-                plane.EulerRotation3 += Vector3.UnitY * 30 * window.deltaTime;
+                planeEuler += Vector3.UnitY * 30 * window.deltaTime;
+                plane.SetEulerRotation(planeEuler);
                 plane.DrawColor(new Vector4(0, 1, 1, 1));
 
                 window.Update();
