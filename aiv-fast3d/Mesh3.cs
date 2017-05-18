@@ -267,7 +267,23 @@ void main(){
             }
 		}
 
-		private Vector3 position3;
+        public Vector3 Rotation3
+        {
+            set
+            {
+                internalRotation = (Matrix3.CreateRotationX(value.X) * Matrix3.CreateRotationZ(value.Z) * Matrix3.CreateRotationY(value.Y)).ExtractRotation();
+            }
+        }
+
+        public Vector3 EulerRotation3
+        {
+            set
+            {
+                Rotation3 = value * (float)Math.PI / 180f;
+            }
+        }
+
+        private Vector3 position3;
 		public Vector3 Position3
 		{
 			get
