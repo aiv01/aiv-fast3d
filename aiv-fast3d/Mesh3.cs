@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace Aiv.Fast3D
 {
-	public class Mesh3 : Mesh
-	{
-		private static string simpleVertexShader3 = @"
+    public class Mesh3 : Mesh
+    {
+        private static string simpleVertexShader3 = @"
 #version 330 core
 layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv;
@@ -127,7 +127,7 @@ void main(){
 			vertex_position = (model * new_vertex).xyz;
 		}
 }";
-		private static string simpleFragmentShader3 = @"
+        private static string simpleFragmentShader3 = @"
 #version 330 core
 
 precision highp float;
@@ -252,597 +252,607 @@ void main(){
 	}
 }";
 
-		private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, null, null, null);
+        private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, null, null, null);
 
-		private Vector3 internalRotation;
+        private Vector3 internalRotation;
 
-		public Vector3 Rotation3
-		{
-			get
-			{
-				return internalRotation;
-			}
-			set
-			{
-				internalRotation = value;
-			}
-		}
+        public Vector3 Rotation3
+        {
+            get
+            {
+                return internalRotation;
+            }
+            set
+            {
+                internalRotation = value;
+            }
+        }
 
-		private Vector3 position3;
-		public Vector3 Position3
-		{
-			get
-			{
-				return position3;
-			}
-			set
-			{
-				position3 = value;
-			}
-		}
+        private Vector3 position3;
+        public Vector3 Position3
+        {
+            get
+            {
+                return position3;
+            }
+            set
+            {
+                position3 = value;
+            }
+        }
 
-		private Vector3 scale3;
-		public Vector3 Scale3
-		{
-			get
-			{
-				return scale3;
-			}
-			set
-			{
-				scale3 = value;
-			}
-		}
+        private Vector3 scale3;
+        public Vector3 Scale3
+        {
+            get
+            {
+                return scale3;
+            }
+            set
+            {
+                scale3 = value;
+            }
+        }
 
-		private Vector3 pivot3;
-		public Vector3 Pivot3
-		{
-			get
-			{
-				return pivot3;
-			}
-			set
-			{
-				pivot3 = value;
-			}
-		}
+        private Vector3 pivot3;
+        public Vector3 Pivot3
+        {
+            get
+            {
+                return pivot3;
+            }
+            set
+            {
+                pivot3 = value;
+            }
+        }
 
-		public Quaternion Quaternion
-		{
-			get
-			{
-				return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
+        public Quaternion Quaternion
+        {
+            get
+            {
+                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
 
-			}
-		}
+            }
+        }
 
-		public Vector3 EulerRotation3
-		{
-			get
-			{
-				return this.Rotation3 * 180f / (float)Math.PI;
-			}
-			set
-			{
-				this.Rotation3 = value * (float)Math.PI / 180f;
-			}
-		}
+        public Vector3 EulerRotation3
+        {
+            get
+            {
+                return this.Rotation3 * 180f / (float)Math.PI;
+            }
+            set
+            {
+                this.Rotation3 = value * (float)Math.PI / 180f;
+            }
+        }
 
-		public Vector3 Forward
-		{
-			get
-			{
-				return Quaternion * Vector3.UnitZ;
-			}
-		}
+        public Vector3 Forward
+        {
+            get
+            {
+                return Quaternion * Vector3.UnitZ;
+            }
+        }
 
-		public Vector3 Right
-		{
-			get
-			{
-				return Vector3.Cross(Forward, Up);
-			}
-		}
+        public Vector3 Right
+        {
+            get
+            {
+                return Vector3.Cross(Forward, Up);
+            }
+        }
 
-		public Vector3 Up
-		{
-			get
-			{
-				return Quaternion * Vector3.UnitY;
-			}
-		}
+        public Vector3 Up
+        {
+            get
+            {
+                return Quaternion * Vector3.UnitY;
+            }
+        }
 
-		public float[] vn;
-		private int vnBufferId;
+        public float[] vn;
+        private int vnBufferId;
 
-		public float[] bonesMapping;
-		private int bonesMappingBufferId;
+        public float[] bonesMapping;
+        private int bonesMappingBufferId;
 
-		public float[] bonesWeight;
-		private int bonesWeightBufferId;
+        public float[] bonesWeight;
+        private int bonesWeightBufferId;
 
 
-		public class Bone
-		{
-			public Vector3 Position;
-			public Quaternion Rotation;
-			public Vector3 Scale;
+        public class Bone
+        {
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public Vector3 Scale;
 
-			public Matrix4 rootMatrix;
-			public Matrix4 BaseMatrix;
+            public Matrix4 rootMatrix;
+            public Matrix4 BaseMatrix;
 
-			private string name;
-			private int index;
-			public string Name
-			{
-				get
-				{
-					return name;
-				}
-			}
-			public int Index
-			{
-				get
-				{
-					return index;
-				}
-			}
+            private string name;
+            private int index;
+            public string Name
+            {
+                get
+                {
+                    return name;
+                }
+            }
+            public int Index
+            {
+                get
+                {
+                    return index;
+                }
+            }
 
-			private Bone parent;
+            private Bone parent;
 
-			public Bone(int index, string name)
-			{
-				this.index = index;
-				this.name = name;
-				Scale = Vector3.One;
-				Rotation = Quaternion.Identity;
-				BaseMatrix = Matrix4.Identity;
-				rootMatrix = Matrix4.Identity;
-			}
+            public Bone(int index, string name)
+            {
+                this.index = index;
+                this.name = name;
+                Scale = Vector3.One;
+                Rotation = Quaternion.Identity;
+                BaseMatrix = Matrix4.Identity;
+                rootMatrix = Matrix4.Identity;
+            }
 
-			public Matrix4 Matrix
-			{
-				get
-				{
-					Matrix4 m =
+            public Matrix4 Matrix
+            {
+                get
+                {
+                    Matrix4 m =
 #if !__MOBILE__
-						Matrix4.CreateScale(this.Scale) *
+                        Matrix4.CreateScale(this.Scale) *
 #else
                 		Matrix4.Scale(this.Scale.X, this.Scale.Y, this.Scale.Z) *
 #endif
-							   Matrix4.CreateFromQuaternion(this.Rotation) *
+                               Matrix4.CreateFromQuaternion(this.Rotation) *
 
-							   Matrix4.CreateTranslation(Position);
+                               Matrix4.CreateTranslation(Position);
 
-					Bone upperBone = parent;
-					while (upperBone != null)
-					{
-						m =
+                    Bone upperBone = parent;
+                    while (upperBone != null)
+                    {
+                        m =
 #if !__MOBILE__
-							Matrix4.CreateScale(upperBone.Scale) *
+                            Matrix4.CreateScale(upperBone.Scale) *
 #else
 							Matrix4.Scale(upperBone.Scale.X, upperBone.Scale.Y, upperBone.Scale.Z) *
 #endif
-							Matrix4.CreateFromQuaternion(upperBone.Rotation) *
-								   Matrix4.CreateTranslation(upperBone.Position) * m;
-						upperBone = upperBone.parent;
-					}
+                            Matrix4.CreateFromQuaternion(upperBone.Rotation) *
+                                   Matrix4.CreateTranslation(upperBone.Position) * m;
+                        upperBone = upperBone.parent;
+                    }
 
-					return m;
-				}
-			}
+                    return m;
+                }
+            }
 
-			public Matrix4 BoneSpaceMatrix
-			{
-				get
-				{
-					Matrix4 m = this.BaseMatrix;
-					Bone upperBone = parent;
-					while (upperBone != null)
-					{
-						m = upperBone.BaseMatrix * m;
-						upperBone = upperBone.parent;
-					}
+            public Matrix4 BoneSpaceMatrix
+            {
+                get
+                {
+                    Matrix4 m = this.BaseMatrix;
+                    Bone upperBone = parent;
+                    while (upperBone != null)
+                    {
+                        m = upperBone.BaseMatrix * m;
+                        upperBone = upperBone.parent;
+                    }
 
-					return m;
-				}
-			}
+                    return m;
+                }
+            }
 
-			public void SetParent(Bone parentBone)
-			{
-				if (parentBone != null)
-					Console.WriteLine("setting parent of " + Name + " to " + parentBone.Name);
-				this.parent = parentBone;
-			}
-		}
+            public void SetParent(Bone parentBone)
+            {
+                if (parentBone != null)
+                    Console.WriteLine("setting parent of " + Name + " to " + parentBone.Name);
+                this.parent = parentBone;
+            }
+        }
 
-		private List<Bone> bones;
-		private Dictionary<string, Bone> skeleton;
-		public bool HasSkeleton
-		{
-			get
-			{
-				return skeleton != null;
-			}
-		}
+        private List<Bone> bones;
+        private Dictionary<string, Bone> skeleton;
+        public bool HasSkeleton
+        {
+            get
+            {
+                return skeleton != null;
+            }
+        }
 
-		public Bone AddBone(int index, string name)
-		{
-			if (skeleton == null)
-			{
-				skeleton = new Dictionary<string, Bone>();
-				bones = new List<Bone>();
-			}
-			Bone bone = new Bone(index, name);
-			skeleton[name] = bone;
-			bones.Insert(index, bone);
-			return bone;
-		}
+        public Bone AddBone(int index, string name)
+        {
+            if (skeleton == null)
+            {
+                skeleton = new Dictionary<string, Bone>();
+                bones = new List<Bone>();
+            }
+            Bone bone = new Bone(index, name);
+            skeleton[name] = bone;
+            bones.Insert(index, bone);
+            return bone;
+        }
 
-		public Bone GetBone(int index)
-		{
-			return bones[index];
-		}
+        public Bone GetBone(int index)
+        {
+            return bones[index];
+        }
 
-		public Bone GetBone(string name)
-		{
-			return skeleton[name];
-		}
+        public Bone GetBone(string name)
+        {
+            return skeleton[name];
+        }
 
-		public bool HasBone(string name)
-		{
-			return skeleton.ContainsKey(name);
-		}
+        public bool HasBone(string name)
+        {
+            return skeleton.ContainsKey(name);
+        }
 
-		public int BonesCount
-		{
-			get
-			{
-				return bones.Count;
-			}
-		}
+        public int BonesCount
+        {
+            get
+            {
+                return bones.Count;
+            }
+        }
 
-		public Mesh3() : base(simpleShader3, 3)
-		{
+        public string Name;
 
-			scale3 = Vector3.One;
-			position3 = Vector3.Zero;
-			internalRotation = Vector3.Zero;
+        public Mesh3() : base(simpleShader3, 3)
+        {
 
-			this.vnBufferId = Graphics.NewBuffer();
-			Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
+            scale3 = Vector3.One;
+            position3 = Vector3.Zero;
+            internalRotation = Vector3.Zero;
 
-			this.bonesMappingBufferId = Graphics.NewBuffer();
-			Graphics.MapBufferToArray(this.bonesMappingBufferId, 4, 4);
-			// hack for avoiding crashes for non skeletal meshes
-			Graphics.BufferData(this.bonesMappingBufferId, new float[1]);
+            Name = string.Empty;
 
-			this.bonesWeightBufferId = Graphics.NewBuffer();
-			Graphics.MapBufferToArray(this.bonesWeightBufferId, 5, 4);
-			// hack for avoiding crashes for non skeletal meshes
-			Graphics.BufferData(this.bonesWeightBufferId, new float[1]);
+            this.vnBufferId = Graphics.NewBuffer();
+            Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
 
-			// ensure normals are loaded
-			this.shaderSetupHook += (mesh) =>
-			{
-				if (((Mesh3)mesh).vn == null)
-				{
-					this.vn = new float[this.v.Length];
-					((Mesh3)mesh).UpdateNormals();
-				}
-				if (((Mesh3)mesh).uv == null)
-				{
-					this.uv = new float[this.v.Length];
-					((Mesh3)mesh).UpdateUV();
-				}
-				if (((Mesh3)mesh).HasSkeleton)
-				{
-					((Mesh3)mesh).shader.SetUniform("use_skeleton", 1f);
-					List<Bone> bones = ((Mesh3)mesh).bones;
-					for (int i = 0; i < bones.Count; i++)
-					{
-						((Mesh3)mesh).shader.SetUniform(string.Format("skeleton[{0}]", i), bones[i].Matrix);
-					}
-				}
-				else
-				{
-					((Mesh3)mesh).shader.SetUniform("use_skeleton", -1f);
-				}
-			};
-		}
+            this.bonesMappingBufferId = Graphics.NewBuffer();
+            Graphics.MapBufferToArray(this.bonesMappingBufferId, 4, 4);
+            // hack for avoiding crashes for non skeletal meshes
+            Graphics.BufferData(this.bonesMappingBufferId, new float[1]);
 
-		public void UpdateNormals()
-		{
-			if (this.vn == null)
-				return;
-			Graphics.BufferData(this.vnBufferId, this.vn);
-		}
+            this.bonesWeightBufferId = Graphics.NewBuffer();
+            Graphics.MapBufferToArray(this.bonesWeightBufferId, 5, 4);
+            // hack for avoiding crashes for non skeletal meshes
+            Graphics.BufferData(this.bonesWeightBufferId, new float[1]);
 
-		public void UpdateBones()
-		{
-			if (this.bonesWeight == null || this.bonesMapping == null)
-				return;
-			Graphics.BufferData(this.bonesMappingBufferId, this.bonesMapping);
-			Graphics.BufferData(this.bonesWeightBufferId, this.bonesWeight);
-		}
+            // ensure normals are loaded
+            this.shaderSetupHook += (mesh) =>
+            {
+                if (((Mesh3)mesh).vn == null)
+                {
+                    this.vn = new float[this.v.Length];
+                    ((Mesh3)mesh).UpdateNormals();
+                }
+                if (((Mesh3)mesh).uv == null)
+                {
+                    this.uv = new float[this.v.Length];
+                    ((Mesh3)mesh).UpdateUV();
+                }
+                if (((Mesh3)mesh).HasSkeleton)
+                {
+                    ((Mesh3)mesh).shader.SetUniform("use_skeleton", 1f);
+                    List<Bone> bones = ((Mesh3)mesh).bones;
+                    for (int i = 0; i < bones.Count; i++)
+                    {
+                        ((Mesh3)mesh).shader.SetUniform(string.Format("skeleton[{0}]", i), bones[i].Matrix);
+                    }
+                }
+                else
+                {
+                    ((Mesh3)mesh).shader.SetUniform("use_skeleton", -1f);
+                }
+            };
+        }
 
-		private Mesh3 parent;
-		public Mesh3 Parent
-		{
-			get
-			{
-				return this.parent;
-			}
-		}
+        public void UpdateNormals()
+        {
+            if (this.vn == null)
+                return;
+            Graphics.BufferData(this.vnBufferId, this.vn);
+        }
 
-		public void SetParent(Mesh3 parent)
-		{
-			this.parent = parent;
-		}
+        public void UpdateBones()
+        {
+            if (this.bonesWeight == null || this.bonesMapping == null)
+                return;
+            Graphics.BufferData(this.bonesMappingBufferId, this.bonesMapping);
+            Graphics.BufferData(this.bonesWeightBufferId, this.bonesWeight);
+        }
 
-		public Matrix4 Matrix
-		{
-			get
-			{
-				Matrix4 m = Matrix4.CreateTranslation(-this.pivot3.X, -this.pivot3.Y, -this.pivot3.Z) *
+        private Mesh3 parent;
+        public Mesh3 Parent
+        {
+            get
+            {
+                return this.parent;
+            }
+        }
+
+        public void SetParent(Mesh3 parent)
+        {
+            this.parent = parent;
+        }
+
+        public Matrix4 Matrix
+        {
+            get
+            {
+                Matrix4 m = Matrix4.CreateTranslation(-this.pivot3.X, -this.pivot3.Y, -this.pivot3.Z) *
 #if !__MOBILE__
-				Matrix4.CreateScale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
+                Matrix4.CreateScale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #else
                 Matrix4.Scale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #endif
-				Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) *
-				// here we do not re-add the pivot, so translation is pivot based too
-				Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
+                Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) *
+                // here we do not re-add the pivot, so translation is pivot based too
+                Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 
-				if (this.parent != null)
-				{
-					m *= this.parent.Matrix;
-				}
+                if (this.parent != null)
+                {
+                    m *= this.parent.Matrix;
+                }
 
-				return m;
-			}
-		}
+                return m;
+            }
+        }
 
-		protected override void ApplyMatrix()
-		{
-			if (this.noMatrix)
-				return;
+        protected override void ApplyMatrix()
+        {
+            if (this.noMatrix)
+                return;
 
-			// WARNING !!! OpenTK uses row-major while OpenGL uses column-major
-			Matrix4 m = this.Matrix;
+            // WARNING !!! OpenTK uses row-major while OpenGL uses column-major
+            Matrix4 m = this.Matrix;
 
-			this.shader.SetUniform("model", m);
+            this.shader.SetUniform("model", m);
 
-			Matrix4 projectionMatrix = Window.Current.ProjectionMatrix;
+            Matrix4 projectionMatrix = Window.Current.ProjectionMatrix;
 
-			// camera space
-			if (this.Camera != null)
-			{
-				this.shader.SetUniform("view", this.Camera.Matrix());
-				m *= this.Camera.Matrix();
-				if (this.Camera.HasProjection)
-				{
-					projectionMatrix = this.Camera.ProjectionMatrix();
-				}
-			}
-			else if (Window.Current.CurrentCamera != null)
-			{
-				this.shader.SetUniform("view", Window.Current.CurrentCamera.Matrix());
-				m *= Window.Current.CurrentCamera.Matrix();
-				if (Window.Current.CurrentCamera.HasProjection)
-				{
-					projectionMatrix = Window.Current.CurrentCamera.ProjectionMatrix();
-				}
-			}
-			else
-			{
-				this.shader.SetUniform("view", Matrix4.Identity);
-			}
+            // camera space
+            if (this.Camera != null)
+            {
+                this.shader.SetUniform("view", this.Camera.Matrix());
+                m *= this.Camera.Matrix();
+                if (this.Camera.HasProjection)
+                {
+                    projectionMatrix = this.Camera.ProjectionMatrix();
+                }
+            }
+            else if (Window.Current.CurrentCamera != null)
+            {
+                this.shader.SetUniform("view", Window.Current.CurrentCamera.Matrix());
+                m *= Window.Current.CurrentCamera.Matrix();
+                if (Window.Current.CurrentCamera.HasProjection)
+                {
+                    projectionMatrix = Window.Current.CurrentCamera.ProjectionMatrix();
+                }
+            }
+            else
+            {
+                this.shader.SetUniform("view", Matrix4.Identity);
+            }
 
-			// for 3d shader we need to model+view transformation matrix for computing lights
-			this.shader.SetUniform("mv", m);
+            // for 3d shader we need to model+view transformation matrix for computing lights
+            this.shader.SetUniform("mv", m);
 
-			Matrix4 mvp = m * projectionMatrix;
+            Matrix4 mvp = m * projectionMatrix;
 
-			// pass the matrix to the shader
-			this.shader.SetUniform("mvp", mvp);
-		}
+            // pass the matrix to the shader
+            this.shader.SetUniform("mvp", mvp);
+        }
 
-		public void RegenerateNormals()
-		{
-			this.vn = new float[this.v.Length];
-			for (int i = 0; i < this.v.Length; i += 9)
-			{
-				float x = this.v[i];
-				float y = this.v[i + 1];
-				float z = this.v[i + 2];
-				Vector3 v0 = new Vector3(x, y, z);
-				x = this.v[i + 3];
-				y = this.v[i + 4];
-				z = this.v[i + 5];
-				Vector3 v1 = new Vector3(x, y, z);
-				x = this.v[i + 6];
-				y = this.v[i + 7];
-				z = this.v[i + 8];
-				Vector3 v2 = new Vector3(x, y, z);
+        public void RegenerateNormals()
+        {
+            this.vn = new float[this.v.Length];
+            for (int i = 0; i < this.v.Length; i += 9)
+            {
+                float x = this.v[i];
+                float y = this.v[i + 1];
+                float z = this.v[i + 2];
+                Vector3 v0 = new Vector3(x, y, z);
+                x = this.v[i + 3];
+                y = this.v[i + 4];
+                z = this.v[i + 5];
+                Vector3 v1 = new Vector3(x, y, z);
+                x = this.v[i + 6];
+                y = this.v[i + 7];
+                z = this.v[i + 8];
+                Vector3 v2 = new Vector3(x, y, z);
 
-				Vector3 vn0 = Vector3.Cross(v2 - v0, v1 - v0).Normalized() * -1;
-				Vector3 vn1 = Vector3.Cross(v0 - v1, v2 - v1).Normalized() * -1;
-				Vector3 vn2 = Vector3.Cross(v1 - v2, v0 - v2).Normalized() * -1;
+                Vector3 vn0 = Vector3.Cross(v2 - v0, v1 - v0).Normalized() * -1;
+                Vector3 vn1 = Vector3.Cross(v0 - v1, v2 - v1).Normalized() * -1;
+                Vector3 vn2 = Vector3.Cross(v1 - v2, v0 - v2).Normalized() * -1;
 
-				this.vn[i] = vn0.X;
-				this.vn[i + 1] = vn0.Y;
-				this.vn[i + 2] = vn0.Z;
+                this.vn[i] = vn0.X;
+                this.vn[i + 1] = vn0.Y;
+                this.vn[i + 2] = vn0.Z;
 
-				this.vn[i + 3] = vn1.X;
-				this.vn[i + 4] = vn1.Y;
-				this.vn[i + 5] = vn1.Z;
+                this.vn[i + 3] = vn1.X;
+                this.vn[i + 4] = vn1.Y;
+                this.vn[i + 5] = vn1.Z;
 
-				this.vn[i + 6] = vn2.X;
-				this.vn[i + 7] = vn2.Y;
-				this.vn[i + 8] = vn2.Z;
-			}
+                this.vn[i + 6] = vn2.X;
+                this.vn[i + 7] = vn2.Y;
+                this.vn[i + 8] = vn2.Z;
+            }
 
-			UpdateNormals();
-		}
+            UpdateNormals();
+        }
 
-		public void DrawGouraud(Vector4 color, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_gouraud", 1f);
-			this.shader.SetUniform("light_vector", light.Vector);
+        public void DrawGouraud(Vector4 color, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_gouraud", 1f);
+            this.shader.SetUniform("light_vector", light.Vector);
             this.shader.SetUniform("light_color", light.Color);
-			this.shader.SetUniform("shadow_bias", shadowBias);
-			if (shadowMapTexture != null)
-			{
-				this.shader.SetUniform("use_shadow_map", 1f);
-				shadowMapTexture.Bind(1);
-				this.shader.SetUniform("shadow_map_tex", 1);
-				this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			}
-			this.DrawColor(color.X, color.Y, color.Z, color.W);
-			this.shader.SetUniform("use_gouraud", -1f);
-			this.shader.SetUniform("use_shadow_map", -1f);
-		}
+            this.shader.SetUniform("shadow_bias", shadowBias);
+            if (shadowMapTexture != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                shadowMapTexture.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            }
+            this.DrawColor(color.X, color.Y, color.Z, color.W);
+            this.shader.SetUniform("use_gouraud", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
+        }
 
-		public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_phong", 1f);
-			this.shader.SetUniform("light_vector", light.Vector);
+        public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_phong", 1f);
+            this.shader.SetUniform("light_vector", light.Vector);
             this.shader.SetUniform("light_color", light.Color);
-			this.shader.SetUniform("ambient", ambientColor);
-			this.shader.SetUniform("shadow_bias", shadowBias);
-			if (shadowMapTexture != null)
-			{
-				this.shader.SetUniform("use_shadow_map", 1f);
-				shadowMapTexture.Bind(1);
-				this.shader.SetUniform("shadow_map_tex", 1);
-				this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			}
-			this.DrawColor(color.X, color.Y, color.Z, color.W);
-			this.shader.SetUniform("use_phong", -1f);
-			this.shader.SetUniform("use_shadow_map", -1f);
-		}
+            this.shader.SetUniform("ambient", ambientColor);
+            this.shader.SetUniform("shadow_bias", shadowBias);
+            if (shadowMapTexture != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                shadowMapTexture.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            }
+            this.DrawColor(color.X, color.Y, color.Z, color.W);
+            this.shader.SetUniform("use_phong", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
+        }
 
-		public void DrawCel(Vector4 color, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_cel", 1f);
-			this.shader.SetUniform("light_vector", light.Vector);
+        public void DrawCel(Vector4 color, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_cel", 1f);
+            this.shader.SetUniform("light_vector", light.Vector);
             this.shader.SetUniform("light_color", light.Color);
-			this.shader.SetUniform("ambient", ambientColor);
-			this.shader.SetUniform("shininess", 0f);
-			this.shader.SetUniform("threshold", threshold);
-			this.shader.SetUniform("shadow_bias", shadowBias);
-			if (shadowMapTexture != null)
-			{
-				this.shader.SetUniform("use_shadow_map", 1f);
-				shadowMapTexture.Bind(1);
-				this.shader.SetUniform("shadow_map_tex", 1);
-				this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			}
-			this.DrawColor(color.X, color.Y, color.Z, color.W);
-			this.shader.SetUniform("use_cel", -1f);
-			this.shader.SetUniform("use_shadow_map", -1f);
-		}
+            this.shader.SetUniform("ambient", ambientColor);
+            this.shader.SetUniform("shininess", 0f);
+            this.shader.SetUniform("threshold", threshold);
+            this.shader.SetUniform("shadow_bias", shadowBias);
+            if (shadowMapTexture != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                shadowMapTexture.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            }
+            this.DrawColor(color.X, color.Y, color.Z, color.W);
+            this.shader.SetUniform("use_cel", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
+        }
 
-		public void DrawGouraud(Texture texture, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_gouraud", 1f);
-			this.shader.SetUniform("light_vector", light.Vector);
+        public void DrawGouraud(Texture texture, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_gouraud", 1f);
+            this.shader.SetUniform("light_vector", light.Vector);
             this.shader.SetUniform("light_color", light.Color);
-			this.shader.SetUniform("shadow_bias", shadowBias);
-			if (shadowMapTexture != null)
-			{
-				this.shader.SetUniform("use_shadow_map", 1f);
-				shadowMapTexture.Bind(1);
-				this.shader.SetUniform("shadow_map_tex", 1);
-				this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			}
-			this.DrawTexture(texture);
-			this.shader.SetUniform("use_gouraud", -1f);
-			this.shader.SetUniform("use_shadow_map", -1f);
-		}
+            this.shader.SetUniform("shadow_bias", shadowBias);
+            if (shadowMapTexture != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                shadowMapTexture.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            }
+            this.DrawTexture(texture);
+            this.shader.SetUniform("use_gouraud", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
+        }
 
-		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_phong", 1f);
-			this.shader.SetUniform("light_vector", light.Vector);
+        public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_phong", 1f);
+            this.shader.SetUniform("light_vector", light.Vector);
             this.shader.SetUniform("light_color", light.Color);
-			this.shader.SetUniform("ambient", ambientColor);
-			this.shader.SetUniform("shininess", shininess);
-			this.shader.SetUniform("shadow_bias", shadowBias);
-			if (shadowMapTexture != null)
-			{
-				this.shader.SetUniform("use_shadow_map", 1f);
-				shadowMapTexture.Bind(1);
-				this.shader.SetUniform("shadow_map_tex", 1);
-				this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			}
-			this.DrawTexture(texture);
-			this.shader.SetUniform("use_phong", -1f);
-			this.shader.SetUniform("use_shadow_map", -1f);
-		}
+            this.shader.SetUniform("ambient", ambientColor);
+            this.shader.SetUniform("shininess", shininess);
+            this.shader.SetUniform("shadow_bias", shadowBias);
+            if (shadowMapTexture != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                shadowMapTexture.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            }
+            this.DrawTexture(texture);
+            this.shader.SetUniform("use_phong", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
+        }
 
-		public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, Texture specularMap, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_phong", 1f);
-			this.shader.SetUniform("light_vector", light.Vector);
+        public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, Texture specularMap, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_phong", 1f);
+            this.shader.SetUniform("light_vector", light.Vector);
             this.shader.SetUniform("light_color", light.Color);
-			this.shader.SetUniform("ambient", ambientColor);
-			this.shader.SetUniform("shadow_bias", shadowBias);
-			if (shadowMapTexture != null)
-			{
-				this.shader.SetUniform("use_shadow_map", 1f);
-				shadowMapTexture.Bind(1);
-				this.shader.SetUniform("shadow_map_tex", 1);
-				this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			}
-			if (specularMap != null)
-			{
-				this.shader.SetUniform("use_specular_map", 1f);
-				specularMap.Bind(2);
-				this.shader.SetUniform("specular_tex", 2);
-			}
-			this.DrawTexture(texture);
-			this.shader.SetUniform("use_phong", -1f);
-			this.shader.SetUniform("use_specular_map", -1f);
-			this.shader.SetUniform("use_shadow_map", -1f);
-		}
+            this.shader.SetUniform("ambient", ambientColor);
+            this.shader.SetUniform("shadow_bias", shadowBias);
+            if (shadowMapTexture != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                shadowMapTexture.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            }
+            if (specularMap != null)
+            {
+                this.shader.SetUniform("use_specular_map", 1f);
+                specularMap.Bind(2);
+                this.shader.SetUniform("specular_tex", 2);
+            }
+            this.DrawTexture(texture);
+            this.shader.SetUniform("use_phong", -1f);
+            this.shader.SetUniform("use_specular_map", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
+        }
 
-		public void DrawCel(Texture texture, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_cel", 1f);
-			this.shader.SetUniform("light_vector", light.Vector);
+        public void DrawCel(Texture texture, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_cel", 1f);
+            this.shader.SetUniform("light_vector", light.Vector);
             this.shader.SetUniform("light_color", light.Color);
-			this.shader.SetUniform("ambient", ambientColor);
-			this.shader.SetUniform("shininess", 0f);
-			this.shader.SetUniform("threshold", threshold);
-			this.shader.SetUniform("shadow_bias", shadowBias);
-			if (shadowMapTexture != null)
-			{
-				this.shader.SetUniform("use_shadow_map", 1f);
-				shadowMapTexture.Bind(1);
-				this.shader.SetUniform("shadow_map_tex", 1);
-				this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			}
-			this.DrawTexture(texture);
-			this.shader.SetUniform("use_cel", -1f);
-			this.shader.SetUniform("use_shadow_map", -1f);
-		}
+            this.shader.SetUniform("ambient", ambientColor);
+            this.shader.SetUniform("shininess", 0f);
+            this.shader.SetUniform("threshold", threshold);
+            this.shader.SetUniform("shadow_bias", shadowBias);
+            if (shadowMapTexture != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                shadowMapTexture.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            }
+            this.DrawTexture(texture);
+            this.shader.SetUniform("use_cel", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
+        }
 
-		public void DrawShadowMap(Light light)
-		{
-			this.Bind();
-			this.shader.SetUniform("use_depth", 1f);
-			this.shader.SetUniform("depth_vp", light.ShadowProjection);
-			this.Draw();
-			this.shader.SetUniform("use_depth", -1f);
-		}
-	}
+        public void DrawShadowMap(Light light)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_depth", 1f);
+            this.shader.SetUniform("depth_vp", light.ShadowProjection);
+            this.Draw();
+            this.shader.SetUniform("use_depth", -1f);
+        }
+
+
+        public override string ToString()
+        {
+            return string.Format("[Mesh3: Name={0}, Position3={1}, Rotation3={2}, Scale3={3}]", Name, Position3, Rotation3, Scale3);
+        }
+    }
 }

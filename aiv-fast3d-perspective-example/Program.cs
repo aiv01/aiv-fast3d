@@ -147,6 +147,10 @@ namespace Aiv.Fast3D.Perspective.Example
             movingTrooper.SetParent(cube);
 
             Mesh3[] tank = ObjLoader.Load("Assets/T34.obj", Vector3.One);
+            foreach (var tankPart in tank)
+            {
+                Console.WriteLine(tankPart);
+            }
             Texture tankDiffuse = new Texture("Assets/T-34.png");
             Texture tankSpecular = new Texture("Assets/T-34_S.png");
 
