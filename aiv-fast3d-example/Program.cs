@@ -45,10 +45,6 @@ namespace Aiv.Fast3D.Example
 			Mesh3 stormTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", new Vector3(50, -50, 50))[0];
 			stormTrooper.Position3 = new Vector3(200, 200, 100);
 
-            Vector3 suzanneEuler = new Vector3();
-            Vector3 mesh3Euler = new Vector3();
-            Vector3 trooperEuler = new Vector3();
-
 			Texture texture = new Texture("Assets/Stormtrooper.png");
 			texture.SetRepeatX();
 			texture.SetRepeatY();
@@ -120,6 +116,13 @@ namespace Aiv.Fast3D.Example
 
 			mesh3.Scale3 = new Vector3(0.5f, 0.5f, 0.5f);
 
+            float mesh3Pitch = 0f;
+            float mesh3Yaw = 0f;
+
+            float suzanneYaw = 0f;
+
+            float stormTrooperYaw = 0f;
+
 			while (window.opened)
 			{
 				if (window.GetKey(KeyCode.Esc))
@@ -127,19 +130,19 @@ namespace Aiv.Fast3D.Example
 
 				if (window.GetKey(KeyCode.Up))
 				{
-                    mesh3Euler += new Vector3(-20 * window.deltaTime, 0f, 0f);
-                    suzanneEuler += new Vector3(0f, -30 * window.deltaTime, 0f);
-                    trooperEuler += new Vector3(0f, 30 * window.deltaTime, 0f);
-                }
+                    mesh3Pitch      += -20 * window.deltaTime;
+                    suzanneYaw      += -30 * window.deltaTime;
+                    stormTrooperYaw +=  30 * window.deltaTime;
+				}
 
 				mesh3.Position3 = new Vector3(130, 130, 100);
 				mesh3.Scale3    = new Vector3(0.5f, 0.5f, 0.5f);
 
-                mesh3Euler += new Vector3(0f, 0f, -10 * window.deltaTime);
+                mesh3Yaw        += -10 * window.deltaTime;
 
-                mesh3.EulerRotation3 = mesh3Euler;
-                suzanne.EulerRotation3 = suzanneEuler;
-                stormTrooper.EulerRotation3 = trooperEuler;
+				mesh3.SetEulerRotation(mesh3Pitch, mesh3Yaw, 0f);
+				suzanne.SetEulerRotation(0f, suzanneYaw, 0f);
+				stormTrooper.SetEulerRotation(0f, stormTrooperYaw, 0f);
 
 				background.DrawTexture(backgroundTexture);
 

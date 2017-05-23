@@ -49,6 +49,31 @@ namespace Aiv.Fast3D
 		}
 
 		private Quaternion internalRotation;
+
+        public void SetEulerRotation(Vector3 pitchYawRoll)
+        {
+            float degToRad = (float)Math.PI / 180f;
+            pitchYawRoll *= degToRad;
+            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
+        }
+
+        public void SetEulerRotation(float pitch, float yaw, float roll)
+        {
+            float degToRad = (float)Math.PI / 180f;
+            internalRotation = (Matrix3.CreateRotationX(pitch * degToRad) * Matrix3.CreateRotationZ(roll * degToRad) * Matrix3.CreateRotationY(yaw * degToRad)).ExtractRotation();
+        }
+
+        public void SetRotation(Vector3 pitchYawRoll)
+        {
+            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
+        }
+
+        public void SetRotation(float pitch, float yaw, float roll)
+        {
+            internalRotation = (Matrix3.CreateRotationX(pitch) * Matrix3.CreateRotationZ(roll) * Matrix3.CreateRotationY(yaw)).ExtractRotation();
+        }
+
+
         public Quaternion Quaternion
 		{
 			get
@@ -61,23 +86,7 @@ namespace Aiv.Fast3D
             }
 		}
 
-        public Vector3 Rotation3
-        {
-            set
-            {
-                internalRotation = (Matrix3.CreateRotationX(value.X) * Matrix3.CreateRotationZ(value.Z) * Matrix3.CreateRotationY(value.Y)).ExtractRotation();
-            }
-        }
-
-        public Vector3 EulerRotation3
-        {
-            set
-            {
-                Rotation3 = value * (float)Math.PI / 180f;
-            }
-        }
-
-        private float fov;
+		private float fov;
 		private float zNear;
 		private float zFar;
 		private float aspectRatio;
@@ -115,28 +124,5 @@ namespace Aiv.Fast3D
 			float fovY = fov / aspectRatio;
 			return Matrix4.CreatePerspectiveFieldOfView(fovY, aspectRatio, zNear, zFar);
 		}
-
-        public void SetEulerRotation(Vector3 pitchYawRoll)
-        {
-            float degToRad = (float)Math.PI / 180f;
-            pitchYawRoll *= degToRad;
-            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
-        }
-
-        public void SetEulerRotation(float pitch, float yaw, float roll)
-        {
-            float degToRad = (float)Math.PI / 180f;
-            internalRotation = (Matrix3.CreateRotationX(pitch * degToRad) * Matrix3.CreateRotationZ(roll * degToRad) * Matrix3.CreateRotationY(yaw * degToRad)).ExtractRotation();
-        }
-
-        public void SetRotation(Vector3 pitchYawRoll)
-        {
-            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
-        }
-
-        public void SetRotation(float pitch, float yaw, float roll)
-        {
-            internalRotation = (Matrix3.CreateRotationX(pitch) * Matrix3.CreateRotationZ(roll) * Matrix3.CreateRotationY(yaw)).ExtractRotation();
-        }
 	}
 }
