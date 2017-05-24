@@ -28,7 +28,7 @@ namespace Aiv.Fast3D
         {
             get
             {
-                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitZ;
+                return Quaternion * Vector3.UnitZ;
             }
         }
 
@@ -44,11 +44,11 @@ namespace Aiv.Fast3D
         {
             get
             {
-                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)) * Vector3.UnitY;
+                return Quaternion * Vector3.UnitY;
             }
         }
 
-        private Vector3 internalRotation;
+        private Quaternion internalRotation;
 
         public Vector3 EulerRotation3
         {
@@ -66,11 +66,11 @@ namespace Aiv.Fast3D
         {
             get
             {
-                return internalRotation;
+                return Utils.QuaternionToPitchYawRoll(internalRotation);
             }
             set
             {
-                internalRotation = value;
+                SetRotation(value);
             }
         }
 
@@ -78,7 +78,11 @@ namespace Aiv.Fast3D
         {
             get
             {
-                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
+                return internalRotation;
+            }
+            set
+            {
+                internalRotation = value;
             }
         }
 
@@ -112,7 +116,7 @@ namespace Aiv.Fast3D
         public PerspectiveCamera(Vector3 position, Vector3 eulerRotation, float fov, float zNear, float zFar, float aspectRatio = 0)
         {
             this.position3 = position;
-            this.internalRotation = eulerRotation * (float)(Math.PI / 180f);
+            this.EulerRotation3 = eulerRotation;
             this.fov = fov * (float)(Math.PI / 180f);
             this.zNear = zNear;
             this.zFar = zFar;
@@ -121,6 +125,38 @@ namespace Aiv.Fast3D
             {
                 this.aspectRatio = Window.Current.aspectRatio;
             }
+        }
+
+        public void Rotate(float x, float y, float z)
+        {
+            Quaternion qX = Quaternion.FromAxisAngle(Vector3.UnitX, x);
+            Quaternion qY = Quaternion.FromAxisAngle(Vector3.UnitY, y);
+            Quaternion qZ = Quaternion.FromAxisAngle(Vector3.UnitZ, z);
+            Quaternion = qX * qZ * qY * Quaternion;
+        }
+
+        public void SetEulerRotation(Vector3 pitchYawRoll)
+        {
+
+            float degToRad = (float)Math.PI / 180f;
+            pitchYawRoll *= degToRad;
+            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
+        }
+
+        public void SetEulerRotation(float pitch, float yaw, float roll)
+        {
+            float degToRad = (float)Math.PI / 180f;
+            internalRotation = (Matrix3.CreateRotationX(pitch * degToRad) * Matrix3.CreateRotationZ(roll * degToRad) * Matrix3.CreateRotationY(yaw * degToRad)).ExtractRotation();
+        }
+
+        public void SetRotation(Vector3 pitchYawRoll)
+        {
+            internalRotation = (Matrix3.CreateRotationX(pitchYawRoll.X) * Matrix3.CreateRotationZ(pitchYawRoll.Z) * Matrix3.CreateRotationY(pitchYawRoll.Y)).ExtractRotation();
+        }
+
+        public void SetRotation(float pitch, float yaw, float roll)
+        {
+            internalRotation = (Matrix3.CreateRotationX(pitch) * Matrix3.CreateRotationZ(roll) * Matrix3.CreateRotationY(yaw)).ExtractRotation();
         }
 
         public override Matrix4 Matrix()

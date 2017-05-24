@@ -12,6 +12,10 @@ namespace Aiv.Fast3D
             {
                 return this.Scale3.X * 0.5f;
             }
+            set
+            {
+                Scale3 = value * 2f * Vector3.One;
+            }
         }
 
         public Sphere(int segments = 32)
