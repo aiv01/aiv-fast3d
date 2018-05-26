@@ -13,6 +13,7 @@ layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv;
 layout(location = 2) in vec4 vc;
 layout(location = 3) in vec3 vn;
+layout(location = 4) in vec3 vtgt;
 
 uniform mat4 model;
 
@@ -32,6 +33,7 @@ uniform float use_gouraud;
 uniform float use_phong;
 uniform float use_depth;
 uniform float use_cel;
+uniform float use_normal_map;
 
 out vec2 uvout;
 out vec4 vertex_color;
@@ -43,6 +45,7 @@ out float lambert;
 
 uniform float use_shadow_map;
 out vec4 shadow_position;
+out mat3 tbn;
 
 void main(){
 
@@ -70,11 +73,11 @@ void main(){
 			// compute the light in camera space
 			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
 			// compute the normal in camera space
-			vec3 normal_from_view = normalize(mv * new_normal).xyz;
+			vec3 normal_from_eye = normalize(mv * new_normal).xyz;
 
 			light_direction = normalize(light_from_view);
 			// get the lambert cosine
-			lambert = clamp(dot(normal_from_view, -light_direction), 0.0, 1.0);
+			lambert = clamp(dot(normal_from_eye, -light_direction), 0.0, 1.0);
 		}
 		else if (use_phong > 0.0 || use_cel > 0.0) {
 			// compute the vertex in camera space
@@ -87,6 +90,14 @@ void main(){
 		
 			light_direction = normalize(light_from_view);
 			vertex_position = (model * new_vertex).xyz;
+
+            if (use_normal_map > 0.0)
+            {
+                vec3 tbn_t = normalize(vec3(mv * vec4(vtgt, 0.0)));
+                vec3 tbn_n = normalize(vec3(mv * vec4(vn, 0.0)));
+                vec3 tbn_b = cross(tbn_n, tbn_t);
+                tbn = mat3(tbn_t, tbn_b, tbn_n);
+            }
 		}
 }";
         private static string simpleFragmentShader3 = @"
@@ -114,6 +125,8 @@ uniform float use_cel;
 
 uniform float use_specular_map;
 uniform sampler2D specular_tex;
+uniform float use_normal_map;
+uniform sampler2D normal_tex;
 
 uniform float threshold;
 
@@ -134,6 +147,8 @@ out vec4 out_color;
 in vec4 shadow_position;
 
 uniform vec3 light_color;
+
+in mat3 tbn;
 
 void main(){
 
@@ -170,7 +185,13 @@ void main(){
 		}
 	}
 	else if (use_phong > 0.0 || use_cel > 0.0) {
-		float diffuse = clamp(dot(normal_from_view, -light_direction), 0.0, 1.0);
+        vec3 normal_eye = normal_from_view;
+        if (use_normal_map > 0.0)
+        {
+            normal_eye = normalize(texture(normal_tex, uvout).rgb * 2 - 1);
+            normal_eye = normalize(tbn * normal_eye);
+        }
+		float diffuse = clamp(dot(normal_eye, -light_direction), 0.0, 1.0);
 
 		if (use_cel > 0.0) {
 			if (diffuse >= threshold) {
@@ -186,7 +207,7 @@ void main(){
 
 		vec3 camera_position = -view[3].xyz;
 		// reflection vector from light
-		vec3 light_reflection = reflect(light_direction, normal_from_view);
+		vec3 light_reflection = reflect(light_direction, normal_eye);
 		// direction from vertex to camera
 		vec3 vertex_to_camera = normalize(camera_position - vertex_position);
 
@@ -344,6 +365,9 @@ void main(){
         public float[] vn;
         private int vnBufferId;
 
+        public float[] vtgt;
+        private int vtgtBufferId;
+
 
         public string Name;
 
@@ -370,6 +394,9 @@ void main(){
             this.vnBufferId = Graphics.NewBuffer();
             Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
 
+            this.vtgtBufferId = Graphics.NewBuffer();
+            Graphics.MapBufferToArray(this.vtgtBufferId, 4, 3);
+
             // ensure normals are loaded
             this.shaderSetupHook += (mesh) =>
             {
@@ -383,7 +410,71 @@ void main(){
                     this.uv = new float[this.v.Length];
                     ((Mesh3)mesh).UpdateUV();
                 }
+                if (((Mesh3)mesh).vtgt == null)
+                {
+                    ((Mesh3)mesh).RegenerateTangents();
+                    ((Mesh3)mesh).UpdateTangents();
+                }
             };
+        }
+
+        public void RegenerateTangents()
+        {
+            if (this.vn == null || this.uv == null)
+                return;
+            this.vtgt = new float[this.v.Length];
+            int j = 0;
+            for (int i = 0; i < this.v.Length; i += 9)
+            {
+                float x = this.v[i];
+                float y = this.v[i + 1];
+                float z = this.v[i + 2];
+                float uvU = this.uv[j++];
+                float uvV = this.uv[j++];
+                Vector3 v0 = new Vector3(x, y, z);
+                Vector2 uv0 = new Vector2(uvU, uvV);
+
+                x = this.v[i + 3];
+                y = this.v[i + 4];
+                z = this.v[i + 5];
+                uvU = this.uv[j++];
+                uvV = this.uv[j++];
+                Vector3 v1 = new Vector3(x, y, z);
+                Vector2 uv1 = new Vector2(uvU, uvV);
+
+                x = this.v[i + 6];
+                y = this.v[i + 7];
+                z = this.v[i + 8];
+                uvU = this.uv[j++];
+                uvV = this.uv[j++];
+                Vector3 v2 = new Vector3(x, y, z);
+                Vector2 uv2 = new Vector2(uvU, uvV);
+
+                Vector3 edge0 = v1 - v0;
+                Vector3 edge1 = v2 - v1;
+
+                Vector2 deltaUV0 = uv1 - uv0;
+                Vector2 deltaUV1 = uv2 - uv1;
+
+                float f = 1.0f / (deltaUV0.X * deltaUV1.Y - deltaUV1.X * deltaUV0.Y);
+
+                Vector3 tgt;
+                tgt.X = f * (deltaUV1.Y * edge0.X - deltaUV0.Y * edge1.X);
+                tgt.Y = f * (deltaUV1.Y * edge0.Y - deltaUV0.Y * edge1.Y);
+                tgt.Z = f * (deltaUV1.Y * edge0.Z - deltaUV0.Y * edge1.Z);
+
+                this.vtgt[i] = tgt.X;
+                this.vtgt[i + 1] = tgt.Y;
+                this.vtgt[i + 2] = tgt.Z;
+
+                this.vtgt[i + 3] = tgt.X;
+                this.vtgt[i + 4] = tgt.Y;
+                this.vtgt[i + 5] = tgt.Z;
+
+                this.vtgt[i + 6] = tgt.X;
+                this.vtgt[i + 7] = tgt.Y;
+                this.vtgt[i + 8] = tgt.Z;
+            }
         }
 
         public void UpdateNormals()
@@ -391,6 +482,13 @@ void main(){
             if (this.vn == null)
                 return;
             Graphics.BufferData(this.vnBufferId, this.vn);
+        }
+
+        public void UpdateTangents()
+        {
+            if (this.vtgt == null)
+                return;
+            Graphics.BufferData(this.vtgtBufferId, this.vtgt);
         }
 
         private Mesh3 parent;
@@ -528,11 +626,10 @@ void main(){
                 this.shader.SetUniform("depth_vp", light.ShadowProjection);
             }
             this.DrawColor(color.X, color.Y, color.Z, color.W);
-            this.shader.SetUniform("use_gouraud", -1f);
-            this.shader.SetUniform("use_shadow_map", -1f);
+            this.ResetUniforms();
         }
 
-        public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        public void DrawPhong(Vector4 color, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f, Texture normalMapTexture = null)
         {
             this.Bind();
             this.shader.SetUniform("use_phong", 1f);
@@ -547,12 +644,17 @@ void main(){
                 this.shader.SetUniform("shadow_map_tex", 1);
                 this.shader.SetUniform("depth_vp", light.ShadowProjection);
             }
+            if (normalMapTexture != null)
+            {
+                this.shader.SetUniform("use_normal_map", 1f);
+                normalMapTexture.Bind(3);
+                this.shader.SetUniform("normal_tex", 3);
+            }
             this.DrawColor(color.X, color.Y, color.Z, color.W);
-            this.shader.SetUniform("use_phong", -1f);
-            this.shader.SetUniform("use_shadow_map", -1f);
+            this.ResetUniforms();
         }
 
-        public void DrawCel(Vector4 color, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        public void DrawCel(Vector4 color, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f, Texture normalMapTexture = null)
         {
             this.Bind();
             this.shader.SetUniform("use_cel", 1f);
@@ -569,9 +671,14 @@ void main(){
                 this.shader.SetUniform("shadow_map_tex", 1);
                 this.shader.SetUniform("depth_vp", light.ShadowProjection);
             }
+            if (normalMapTexture != null)
+            {
+                this.shader.SetUniform("use_normal_map", 1f);
+                normalMapTexture.Bind(3);
+                this.shader.SetUniform("normal_tex", 3);
+            }
             this.DrawColor(color.X, color.Y, color.Z, color.W);
-            this.shader.SetUniform("use_cel", -1f);
-            this.shader.SetUniform("use_shadow_map", -1f);
+            this.ResetUniforms();
         }
 
         public void DrawGouraud(Texture texture, Light light, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
@@ -589,11 +696,10 @@ void main(){
                 this.shader.SetUniform("depth_vp", light.ShadowProjection);
             }
             this.DrawTexture(texture);
-            this.shader.SetUniform("use_gouraud", -1f);
-            this.shader.SetUniform("use_shadow_map", -1f);
+            this.ResetUniforms();
         }
 
-        public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, float shininess = 0, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f, Texture normalMapTexture = null)
         {
             this.Bind();
             this.shader.SetUniform("use_phong", 1f);
@@ -609,12 +715,17 @@ void main(){
                 this.shader.SetUniform("shadow_map_tex", 1);
                 this.shader.SetUniform("depth_vp", light.ShadowProjection);
             }
+            if (normalMapTexture != null)
+            {
+                this.shader.SetUniform("use_normal_map", 1f);
+                normalMapTexture.Bind(3);
+                this.shader.SetUniform("normal_tex", 3);
+            }
             this.DrawTexture(texture);
-            this.shader.SetUniform("use_phong", -1f);
-            this.shader.SetUniform("use_shadow_map", -1f);
+            this.ResetUniforms();
         }
 
-        public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, Texture specularMap, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        public void DrawPhong(Texture texture, Light light, Vector3 ambientColor, Texture specularMap, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f, Texture normalMapTexture = null)
         {
             this.Bind();
             this.shader.SetUniform("use_phong", 1f);
@@ -635,13 +746,17 @@ void main(){
                 specularMap.Bind(2);
                 this.shader.SetUniform("specular_tex", 2);
             }
+            if (normalMapTexture != null)
+            {
+                this.shader.SetUniform("use_normal_map", 1f);
+                normalMapTexture.Bind(3);
+                this.shader.SetUniform("normal_tex", 3);
+            }
             this.DrawTexture(texture);
-            this.shader.SetUniform("use_phong", -1f);
-            this.shader.SetUniform("use_specular_map", -1f);
-            this.shader.SetUniform("use_shadow_map", -1f);
+            this.ResetUniforms();
         }
 
-        public void DrawCel(Texture texture, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f)
+        public void DrawCel(Texture texture, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f, Texture normalMapTexture = null)
         {
             this.Bind();
             this.shader.SetUniform("use_cel", 1f);
@@ -658,9 +773,14 @@ void main(){
                 this.shader.SetUniform("shadow_map_tex", 1);
                 this.shader.SetUniform("depth_vp", light.ShadowProjection);
             }
+            if (normalMapTexture != null)
+            {
+                this.shader.SetUniform("use_normal_map", 1f);
+                normalMapTexture.Bind(3);
+                this.shader.SetUniform("normal_tex", 3);
+            }
             this.DrawTexture(texture);
-            this.shader.SetUniform("use_cel", -1f);
-            this.shader.SetUniform("use_shadow_map", -1f);
+            this.ResetUniforms();
         }
 
         public void DrawShadowMap(Light light)
@@ -669,7 +789,18 @@ void main(){
             this.shader.SetUniform("use_depth", 1f);
             this.shader.SetUniform("depth_vp", light.ShadowProjection);
             this.Draw();
+            this.ResetUniforms();
+        }
+
+        public void ResetUniforms()
+        {
+            this.shader.SetUniform("use_gouraud", -1f);
+            this.shader.SetUniform("use_phong", -1f);
+            this.shader.SetUniform("use_cel", -1f);
             this.shader.SetUniform("use_depth", -1f);
+            this.shader.SetUniform("use_specular_map", -1f);
+            this.shader.SetUniform("use_normal_map", -1f);
+            this.shader.SetUniform("use_shadow_map", -1f);
         }
 
 

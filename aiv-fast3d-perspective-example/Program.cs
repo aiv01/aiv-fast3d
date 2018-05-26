@@ -112,7 +112,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
             float crateRotation = 0;
 
-          
+
 
             Mesh3 movingTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
             movingTrooper.Position3 = new Vector3(0, 0, 2);
@@ -127,6 +127,7 @@ namespace Aiv.Fast3D.Perspective.Example
             }
             Texture tankDiffuse = new Texture("Assets/T-34.png");
             Texture tankSpecular = new Texture("Assets/T-34_S.png");
+            Texture tankNormal = new Texture("Assets/T-34_N.png");
 
 
 
@@ -146,6 +147,9 @@ namespace Aiv.Fast3D.Perspective.Example
 
             Sphere sphere = new Sphere();
             Texture world = new Texture("Assets/world.jpg");
+
+            Cube wall = new Cube();
+            Texture bricksNormal = new Texture("Assets/normal_mapping_normal_map.png");
 
             while (window.IsOpened)
             {
@@ -311,7 +315,7 @@ namespace Aiv.Fast3D.Perspective.Example
                 pyramid.Position3 = new Vector3(-30, 2, 10);
                 pyramid.DrawGouraud(new Vector4(1, 1, 0, 1), directionalLight, shadowTexture);
 
-              
+
                 stormTrooper.Position3 = new Vector3(0, 0, 5);
                 stormTrooper.Rotation3 = Vector3.Zero;
                 stormTrooper.DrawGouraud(stormTrooperTexture, directionalLight, shadowTexture);
@@ -349,7 +353,7 @@ namespace Aiv.Fast3D.Perspective.Example
                 foreach (Mesh3 item in tank)
                 {
                     item.Position3 = new Vector3(-10, 0, 20);
-                    item.DrawPhong(tankDiffuse, directionalLight, new Vector3(0.1f, 0.1f, 0.1f), tankSpecular);
+                    item.DrawPhong(tankDiffuse, directionalLight, new Vector3(0.1f, 0.1f, 0.1f), tankSpecular, null, 0, tankNormal);
 
                 }
 
@@ -362,6 +366,11 @@ namespace Aiv.Fast3D.Perspective.Example
                 sphere.Scale3 = new Vector3(3);
                 sphere.DrawPhong(world, directionalLight, new Vector3(0.2f, 0.2f, 0.2f));
                 //sphere.DrawColor(new Vector4(1, 0, 0, 1));
+
+                wall.Position3 = new Vector3(8, 3, 15);
+                wall.Scale3 = new Vector3(3, 3, 1);
+                wall.EulerRotation3 += new Vector3(0, 30, 0) * window.deltaTime;
+                wall.DrawPhong(new Vector4(1, 0, 0, 1), directionalLight, new Vector3(0.2f, 0.2f, 0.2f), 0, null, 0, bricksNormal);
 
                 logo.DrawTexture(logoAiv);
 

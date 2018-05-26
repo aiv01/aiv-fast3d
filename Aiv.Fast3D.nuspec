@@ -10,8 +10,8 @@
     <iconUrl>https://avatars2.githubusercontent.com/u/15378741</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Hardware accelerated 3d drawing library built over Aiv.Fast2D</description>
-    <releaseNotes>Removed Bones and Fbx Loader, dynamic rotation mode</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <releaseNotes>Added normal/bump mapping</releaseNotes>
+    <copyright>Copyright 2018</copyright>
     <tags>aiv gaming 3d drawing opengl</tags>
     <dependencies>
       <dependency id="OpenTK" version="2.0.0" />
