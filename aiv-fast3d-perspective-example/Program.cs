@@ -112,37 +112,11 @@ namespace Aiv.Fast3D.Perspective.Example
 
             float crateRotation = 0;
 
-            Mesh3[] botMesh = FbxLoader.Load("Assets/running.fbx", new Vector3(0.02f, 0.02f, 0.02f));
-
-            SkeletalAnimation[] animations = FbxLoader.LoadAnimations("Assets/running.fbx", new Vector3(0.02f, 0.02f, 0.02f));
-
-
-            int numFrames = 0;
+          
 
             Mesh3 movingTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
             movingTrooper.Position3 = new Vector3(0, 0, 2);
 
-            foreach (SkeletalAnimation animation in animations)
-            {
-                Console.WriteLine(animation.Name);
-                foreach (string subject in animation.KeyFrames.Keys)
-                {
-                    Console.WriteLine(subject);
-                    int currentFrames = 0;
-                    foreach (SkeletalAnimation.KeyFrame frame in animation.KeyFrames[subject])
-                    {
-                        Console.WriteLine(frame.Time + " " + frame.Position + " " + frame.Rotation + " " + frame.Scale);
-                        currentFrames++;
-                    }
-                    if (currentFrames > numFrames)
-                        numFrames = currentFrames;
-                }
-            }
-
-            float neckRotation = 0;
-
-            int animationIndex = 0;
-            float animationTimer = 1f / animations[0].Fps;
 
             movingTrooper.SetParent(cube);
 
@@ -260,44 +234,9 @@ namespace Aiv.Fast3D.Perspective.Example
 
                 directionalLight.SetShadowProjection(shadow_left, shadow_right, shadow_bottom, shadow_top, shadow_near, shadow_far);
 
-                animationTimer -= window.deltaTime;
-                if (animationTimer <= 0)
-                {
-                    animationIndex++;
-                    if (animationIndex >= numFrames)
-                        animationIndex = 0;
-                    animationTimer = 1f / animations[0].Fps;
-                }
 
-                foreach (string subject in animations[0].KeyFrames.Keys)
-                {
-                    if (botMesh[0].HasBone(subject))
-                    {
-                        Mesh3.Bone bone = botMesh[0].GetBone(subject);
-                        if (animationIndex < animations[0].KeyFrames[subject].Count)
-                        {
-                            //bone.Position = animations[0].KeyFrames[subject][animationIndex].Position;
-                            //bone.Rotation = animations[0].KeyFrames[subject][animationIndex].Rotation;
-                        }
-                    }
-                }
 
                 pyramidRotation += new Vector3(0, 10, 0) * window.deltaTime;
-                neckRotation += window.deltaTime;
-
-                string boneName = "mixamorig:Neck";
-                if (botMesh[0].HasBone(boneName))
-                {
-                    Mesh3.Bone bone = botMesh[0].GetBone(boneName);
-                    bone.Rotation = Quaternion.FromEulerAngles(new Vector3(0, (float)Math.Sin(neckRotation) / 2, 0));
-                }
-
-                if (botMesh[1].HasBone(boneName))
-                {
-                    Mesh3.Bone bone = botMesh[1].GetBone(boneName);
-                    bone.Rotation = Quaternion.FromEulerAngles(new Vector3(0, (float)Math.Sin(neckRotation) / 2, 0));
-                }
-
 
                 if (window.mouseLeft)
                 {
@@ -330,12 +269,6 @@ namespace Aiv.Fast3D.Perspective.Example
                 pyramid.Rotation3 = Vector3.Zero;
                 pyramid.Position3 = new Vector3(-30, 2, 10) + shadowOffset;
                 pyramid.DrawShadowMap(directionalLight);
-
-
-                botMesh[0].Position3 = new Vector3(6, 0, 10) + shadowOffset;
-                botMesh[0].DrawShadowMap(directionalLight);
-                botMesh[1].Position3 = new Vector3(6, 0, 10) + shadowOffset;
-                botMesh[1].DrawShadowMap(directionalLight);
 
                 stormTrooper.Position3 = new Vector3(0, 0, 5) + shadowOffset;
                 stormTrooper.Rotation3 = Vector3.Zero;
@@ -378,11 +311,7 @@ namespace Aiv.Fast3D.Perspective.Example
                 pyramid.Position3 = new Vector3(-30, 2, 10);
                 pyramid.DrawGouraud(new Vector4(1, 1, 0, 1), directionalLight, shadowTexture);
 
-                botMesh[0].Position3 = new Vector3(6, 0, 10);
-                botMesh[0].DrawGouraud(new Vector4(0, 0.8f, 1, 1), directionalLight, shadowTexture, 0.01f);
-                botMesh[1].Position3 = new Vector3(6, 0, 10);
-                botMesh[1].DrawGouraud(new Vector4(1, 0, 0, 1), directionalLight, shadowTexture, 0.01f);
-
+              
                 stormTrooper.Position3 = new Vector3(0, 0, 5);
                 stormTrooper.Rotation3 = Vector3.Zero;
                 stormTrooper.DrawGouraud(stormTrooperTexture, directionalLight, shadowTexture);

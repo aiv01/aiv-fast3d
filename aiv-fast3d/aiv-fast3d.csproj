@@ -37,9 +37,6 @@
     <Reference Include="OpenTK">
       <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
-    <Reference Include="AssimpNet">
-      <HintPath>..\packages\AssimpNet.3.3.2\lib\net45\AssimpNet.dll</HintPath>
-    </Reference>
     <Reference Include="aiv-fast2d">
       <HintPath>..\packages\Aiv.Fast2D.0.13.0\lib\net40\aiv-fast2d.dll</HintPath>
     </Reference>
@@ -55,7 +52,6 @@
     <Compile Include="DepthTexture.cs" />
     <Compile Include="Light.cs" />
     <Compile Include="DirectionalLight.cs" />
-    <Compile Include="FbxLoader.cs" />
     <Compile Include="SkeletalAnimation.cs" />
     <Compile Include="Plane.cs" />
     <Compile Include="Sphere.cs" />
@@ -72,5 +68,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="..\packages\AssimpNet.3.3.2\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.2\build\AssimpNet.targets')" />
 </Project>

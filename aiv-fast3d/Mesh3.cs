@@ -13,8 +13,6 @@ layout(location = 0) in vec3 vertex;
 layout(location = 1) in vec2 uv;
 layout(location = 2) in vec4 vc;
 layout(location = 3) in vec3 vn;
-layout(location = 4) in vec4 bones;
-layout(location = 5) in vec4 bones_weight;
 
 uniform mat4 model;
 
@@ -35,10 +33,6 @@ uniform float use_phong;
 uniform float use_depth;
 uniform float use_cel;
 
-uniform mat4 skeleton[80];
-
-uniform float use_skeleton;
-
 out vec2 uvout;
 out vec4 vertex_color;
 out vec3 normal_from_view;
@@ -58,38 +52,6 @@ void main(){
 
         uvout = uv;
         vertex_color = vc;
-
-		if (use_skeleton > 0.0) {
-			// check up to 4 bones
-			int index = int(bones.x);
-			mat4 bone_mat = mat4(1);
-			if (index >= 0) {
-				float weight = bones_weight.x;
-				bone_mat = skeleton[index] * weight;
-			}
-			index = int(bones.y);
-			if (index >= 0) {
-				float weight = bones_weight.y;
-				bone_mat += skeleton[index] * weight;
-			}
-			index = int(bones.z);
-			if (index >= 0) {
-				float weight = bones_weight.z;
-				bone_mat += skeleton[index] * weight;
-			}
-			index = int(bones.w);
-			if (index >= 0) {
-				float weight = bones_weight.w;
-				bone_mat += skeleton[index] * weight;
-			}
-
-			new_vertex = bone_mat * new_vertex;
-			new_normal = bone_mat * new_normal;
-
-			// fixup w (could be broken after transformations)
-			new_vertex = vec4(new_vertex.xyz, 1);
-			new_normal = vec4(new_normal.xyz, 0);
-		}
 
 		if (use_depth > 0.0) {
 			gl_Position = depth_vp * model * new_vertex;
@@ -254,6 +216,28 @@ void main(){
 
         private static Shader simpleShader3 = new Shader(simpleVertexShader3, simpleFragmentShader3, null, null, null);
 
+        public enum RotationMode
+        {
+            XYZ,
+            XZY,
+            YXZ,
+            YZX,
+            ZXY,
+            ZYX
+        }
+
+        private Dictionary<RotationMode, RotationFunc> rotationModesMapping;
+
+        public void SetRotationMode(RotationMode mode)
+        {
+            rotationGenerator = rotationModesMapping[mode];
+        }
+
+        public void SetRotationMode(RotationFunc func)
+        {
+            rotationGenerator = func;
+        }
+
         private Vector3 internalRotation;
 
         public Vector3 Rotation3
@@ -307,11 +291,16 @@ void main(){
             }
         }
 
+        public delegate Matrix4 RotationFunc();
+
+        private RotationFunc rotationGenerator;
+
+
         public Quaternion Quaternion
         {
             get
             {
-                return (Matrix3.CreateRotationY(internalRotation.Y) * Matrix3.CreateRotationZ(internalRotation.Z) * Matrix3.CreateRotationX(internalRotation.X)).ExtractRotation();
+                return rotationGenerator().ExtractRotation();
 
             }
         }
@@ -355,152 +344,6 @@ void main(){
         public float[] vn;
         private int vnBufferId;
 
-        public float[] bonesMapping;
-        private int bonesMappingBufferId;
-
-        public float[] bonesWeight;
-        private int bonesWeightBufferId;
-
-
-        public class Bone
-        {
-            public Vector3 Position;
-            public Quaternion Rotation;
-            public Vector3 Scale;
-
-            public Matrix4 rootMatrix;
-            public Matrix4 BaseMatrix;
-
-            private string name;
-            private int index;
-            public string Name
-            {
-                get
-                {
-                    return name;
-                }
-            }
-            public int Index
-            {
-                get
-                {
-                    return index;
-                }
-            }
-
-            private Bone parent;
-
-            public Bone(int index, string name)
-            {
-                this.index = index;
-                this.name = name;
-                Scale = Vector3.One;
-                Rotation = Quaternion.Identity;
-                BaseMatrix = Matrix4.Identity;
-                rootMatrix = Matrix4.Identity;
-            }
-
-            public Matrix4 Matrix
-            {
-                get
-                {
-                    Matrix4 m =
-#if !__MOBILE__
-                        Matrix4.CreateScale(this.Scale) *
-#else
-                		Matrix4.Scale(this.Scale.X, this.Scale.Y, this.Scale.Z) *
-#endif
-                               Matrix4.CreateFromQuaternion(this.Rotation) *
-
-                               Matrix4.CreateTranslation(Position);
-
-                    Bone upperBone = parent;
-                    while (upperBone != null)
-                    {
-                        m =
-#if !__MOBILE__
-                            Matrix4.CreateScale(upperBone.Scale) *
-#else
-							Matrix4.Scale(upperBone.Scale.X, upperBone.Scale.Y, upperBone.Scale.Z) *
-#endif
-                            Matrix4.CreateFromQuaternion(upperBone.Rotation) *
-                                   Matrix4.CreateTranslation(upperBone.Position) * m;
-                        upperBone = upperBone.parent;
-                    }
-
-                    return m;
-                }
-            }
-
-            public Matrix4 BoneSpaceMatrix
-            {
-                get
-                {
-                    Matrix4 m = this.BaseMatrix;
-                    Bone upperBone = parent;
-                    while (upperBone != null)
-                    {
-                        m = upperBone.BaseMatrix * m;
-                        upperBone = upperBone.parent;
-                    }
-
-                    return m;
-                }
-            }
-
-            public void SetParent(Bone parentBone)
-            {
-                if (parentBone != null)
-                    Console.WriteLine("setting parent of " + Name + " to " + parentBone.Name);
-                this.parent = parentBone;
-            }
-        }
-
-        private List<Bone> bones;
-        private Dictionary<string, Bone> skeleton;
-        public bool HasSkeleton
-        {
-            get
-            {
-                return skeleton != null;
-            }
-        }
-
-        public Bone AddBone(int index, string name)
-        {
-            if (skeleton == null)
-            {
-                skeleton = new Dictionary<string, Bone>();
-                bones = new List<Bone>();
-            }
-            Bone bone = new Bone(index, name);
-            skeleton[name] = bone;
-            bones.Insert(index, bone);
-            return bone;
-        }
-
-        public Bone GetBone(int index)
-        {
-            return bones[index];
-        }
-
-        public Bone GetBone(string name)
-        {
-            return skeleton[name];
-        }
-
-        public bool HasBone(string name)
-        {
-            return skeleton.ContainsKey(name);
-        }
-
-        public int BonesCount
-        {
-            get
-            {
-                return bones.Count;
-            }
-        }
 
         public string Name;
 
@@ -513,18 +356,19 @@ void main(){
 
             Name = string.Empty;
 
+            rotationModesMapping = new Dictionary<RotationMode, RotationFunc>();
+            rotationModesMapping[RotationMode.XYZ] = () => Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z);
+            rotationModesMapping[RotationMode.XZY] = () => Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y);
+            rotationModesMapping[RotationMode.YXZ] = () => Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z);
+            rotationModesMapping[RotationMode.YZX] = () => Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X);
+            rotationModesMapping[RotationMode.ZXY] = () => Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y);
+            rotationModesMapping[RotationMode.ZYX] = () => Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X);
+
+
+            SetRotationMode(RotationMode.YZX);
+
             this.vnBufferId = Graphics.NewBuffer();
             Graphics.MapBufferToArray(this.vnBufferId, 3, 3);
-
-            this.bonesMappingBufferId = Graphics.NewBuffer();
-            Graphics.MapBufferToArray(this.bonesMappingBufferId, 4, 4);
-            // hack for avoiding crashes for non skeletal meshes
-            Graphics.BufferData(this.bonesMappingBufferId, new float[1]);
-
-            this.bonesWeightBufferId = Graphics.NewBuffer();
-            Graphics.MapBufferToArray(this.bonesWeightBufferId, 5, 4);
-            // hack for avoiding crashes for non skeletal meshes
-            Graphics.BufferData(this.bonesWeightBufferId, new float[1]);
 
             // ensure normals are loaded
             this.shaderSetupHook += (mesh) =>
@@ -539,19 +383,6 @@ void main(){
                     this.uv = new float[this.v.Length];
                     ((Mesh3)mesh).UpdateUV();
                 }
-                if (((Mesh3)mesh).HasSkeleton)
-                {
-                    ((Mesh3)mesh).shader.SetUniform("use_skeleton", 1f);
-                    List<Bone> bones = ((Mesh3)mesh).bones;
-                    for (int i = 0; i < bones.Count; i++)
-                    {
-                        ((Mesh3)mesh).shader.SetUniform(string.Format("skeleton[{0}]", i), bones[i].Matrix);
-                    }
-                }
-                else
-                {
-                    ((Mesh3)mesh).shader.SetUniform("use_skeleton", -1f);
-                }
             };
         }
 
@@ -560,14 +391,6 @@ void main(){
             if (this.vn == null)
                 return;
             Graphics.BufferData(this.vnBufferId, this.vn);
-        }
-
-        public void UpdateBones()
-        {
-            if (this.bonesWeight == null || this.bonesMapping == null)
-                return;
-            Graphics.BufferData(this.bonesMappingBufferId, this.bonesMapping);
-            Graphics.BufferData(this.bonesWeightBufferId, this.bonesWeight);
         }
 
         private Mesh3 parent;
@@ -594,7 +417,7 @@ void main(){
 #else
                 Matrix4.Scale(this.scale3.X, this.scale3.Y, this.scale3.Z) *
 #endif
-                Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) *
+                                   rotationGenerator() *
                 // here we do not re-add the pivot, so translation is pivot based too
                 Matrix4.CreateTranslation(this.position3.X, this.position3.Y, this.position3.Z);
 
