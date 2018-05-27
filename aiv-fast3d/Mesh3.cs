@@ -25,8 +25,9 @@ uniform mat4 view;
 
 uniform mat4 depth_vp;
 
-uniform vec3 light_vector;
-uniform vec3 light_position;
+uniform vec3 light_vector[8];
+uniform int num_lights;
+
 
 
 uniform float use_gouraud;
@@ -38,7 +39,7 @@ uniform float use_normal_map;
 out vec2 uvout;
 out vec4 vertex_color;
 out vec3 normal_from_view;
-out vec3 light_direction;
+out vec3 light_direction[8];
 out vec3 vertex_position;
 
 out float lambert;
@@ -71,24 +72,27 @@ void main(){
 			// compute the vertex in camera space
 			vec3 vertex_from_view = (mv * new_vertex).xyz;
 			// compute the light in camera space
-			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
+			vec3 light_from_view = (view * vec4(light_vector[0], 0)).xyz;
 			// compute the normal in camera space
 			vec3 normal_from_eye = normalize(mv * new_normal).xyz;
 
-			light_direction = normalize(light_from_view);
+			light_direction[0] = normalize(light_from_view);
 			// get the lambert cosine
-			lambert = clamp(dot(normal_from_eye, -light_direction), 0.0, 1.0);
+			lambert = clamp(dot(normal_from_eye, -light_direction[0]), 0.0, 1.0);
 		}
 		else if (use_phong > 0.0 || use_cel > 0.0) {
 			// compute the vertex in camera space
 			vec3 vertex_from_view = (mv * new_vertex).xyz;
-			// compute the light in camera space
-			//vec3 light_from_view = (view * vec4(light_position, 1.0)).xyz;
-			vec3 light_from_view = (view * vec4(light_vector, 0)).xyz;
+			
 			// compute the normal in camera space
 			normal_from_view = normalize(mv * new_normal).xyz;
 		
-			light_direction = normalize(light_from_view);
+            // compute the light in camera space
+            for(int i=0;i<int(num_lights + 0.1);i++)
+            {
+                vec3 light_from_view = (view * vec4(light_vector[i], 0)).xyz;
+			    light_direction[i] = normalize(light_from_view);
+            }
 			vertex_position = (model * new_vertex).xyz;
 
             if (use_normal_map > 0.0)
@@ -127,6 +131,8 @@ uniform float use_specular_map;
 uniform sampler2D specular_tex;
 uniform float use_normal_map;
 uniform sampler2D normal_tex;
+uniform float use_emissive_map;
+uniform sampler2D emissive_tex;
 
 uniform float threshold;
 
@@ -140,13 +146,17 @@ in vec4 vertex_color;
 in float lambert;
 
 in vec3 normal_from_view;
-in vec3 light_direction;
+
 in vec3 vertex_position;
 
 out vec4 out_color;
 in vec4 shadow_position;
 
-uniform vec3 light_color;
+in vec3 light_direction[8];
+
+uniform vec3 light_color[8];
+uniform float light_strength[8];
+uniform int num_lights;
 
 in mat3 tbn;
 
@@ -175,7 +185,7 @@ void main(){
     out_color += color;
 
 	if (use_gouraud > 0.0) {
-		out_color = vec4(out_color.xyz * light_color * lambert, out_color.w);
+		out_color = vec4(out_color.xyz * light_color[0] * lambert, out_color.w);
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
@@ -191,45 +201,61 @@ void main(){
             normal_eye = normalize(texture(normal_tex, uvout).rgb * 2 - 1);
             normal_eye = normalize(tbn * normal_eye);
         }
-		float diffuse = clamp(dot(normal_eye, -light_direction), 0.0, 1.0);
 
-		if (use_cel > 0.0) {
-			if (diffuse >= threshold) {
-				diffuse = 1;
-			}
-			else if (diffuse >= threshold/2) {
-				diffuse = 0.5;
-			}
-			else {
-				diffuse = 0;
-			}
-		}
+        vec3 light_multiplier = vec3(0, 0, 0);
 
-		vec3 camera_position = -view[3].xyz;
-		// reflection vector from light
-		vec3 light_reflection = reflect(light_direction, normal_eye);
-		// direction from vertex to camera
-		vec3 vertex_to_camera = normalize(camera_position - vertex_position);
+        // manage lights (hack num_lights value to avoid precision errors)
+        for(int i=0;i<int(num_lights + 0.1);i++)
+        {
+		    float diffuse = clamp(dot(normal_eye, -light_direction[i]), 0.0, 1.0);
 
-		float specular_shininess = shininess;
+		    if (use_cel > 0.0) {
+			    if (diffuse >= threshold) {
+				    diffuse = 1;
+			    }
+			    else if (diffuse >= threshold/2) {
+				    diffuse = 0.5;
+			    }
+			    else {
+				    diffuse = 0;
+			    }
+		    }
 
-		if (use_specular_map > 0.0) {
-			specular_shininess = texture(specular_tex, uvout).x;
-		}
+		    vec3 camera_position = -view[3].xyz;
+		    // reflection vector from light
+		    vec3 light_reflection = reflect(light_direction[i], normal_eye);
+		    // direction from vertex to camera
+		    vec3 vertex_to_camera = normalize(camera_position - vertex_position);
 
-		float specular = 0;
+		    float specular_shininess = shininess;
 
-		if (specular_shininess > 0.0) {
-			specular = pow(max(0.0, dot(vertex_to_camera, light_reflection)), specular_shininess);
-		}
+		    if (use_specular_map > 0.0) {
+			    specular_shininess = texture(specular_tex, uvout).x;
+		    }
+
+		    float specular = 0;
+
+		    if (specular_shininess > 0.0) {
+			    specular = pow(max(0.0, dot(vertex_to_camera, light_reflection)), specular_shininess);
+		    }
 	
-		vec3 base_color = out_color.xyz;
-		out_color = vec4(base_color * light_color * (diffuse + ambient + specular), out_color.w);
+		    light_multiplier += light_color[i] * (diffuse + specular);
+        }
+
+        out_color = vec4(out_color.xyz * (light_multiplier + ambient) + ambient, out_color.w);
+
+        if (use_emissive_map > 0.0)
+        {
+            out_color += texture(emissive_tex, uvout);
+        }
+        
+        
+        // apply shadow
 		if (use_shadow_map > 0.0) {
 			vec3 shadow_projection = shadow_position.xyz / shadow_position.w;
 			shadow_projection = shadow_projection * 0.5 + 0.5;
 			if ( texture(shadow_map_tex, shadow_projection.xy).x < shadow_projection.z-shadow_bias && shadow_projection.z <= 1.0) {
-				out_color = vec4(base_color.xyz * ambient, out_color.w) ;
+				out_color = vec4(out_color.xyz * ambient * 0.5, out_color.w) ;
 			}
 		}
 	}
@@ -615,8 +641,7 @@ void main(){
         {
             this.Bind();
             this.shader.SetUniform("use_gouraud", 1f);
-            this.shader.SetUniform("light_vector", light.Vector);
-            this.shader.SetUniform("light_color", light.Color);
+            this.SetDefaultLight(light);
             this.shader.SetUniform("shadow_bias", shadowBias);
             if (shadowMapTexture != null)
             {
@@ -633,8 +658,7 @@ void main(){
         {
             this.Bind();
             this.shader.SetUniform("use_phong", 1f);
-            this.shader.SetUniform("light_vector", light.Vector);
-            this.shader.SetUniform("light_color", light.Color);
+            this.SetDefaultLight(light);
             this.shader.SetUniform("ambient", ambientColor);
             this.shader.SetUniform("shadow_bias", shadowBias);
             if (shadowMapTexture != null)
@@ -658,10 +682,8 @@ void main(){
         {
             this.Bind();
             this.shader.SetUniform("use_cel", 1f);
-            this.shader.SetUniform("light_vector", light.Vector);
-            this.shader.SetUniform("light_color", light.Color);
+            this.SetDefaultLight(light);
             this.shader.SetUniform("ambient", ambientColor);
-            this.shader.SetUniform("shininess", 0f);
             this.shader.SetUniform("threshold", threshold);
             this.shader.SetUniform("shadow_bias", shadowBias);
             if (shadowMapTexture != null)
@@ -685,8 +707,7 @@ void main(){
         {
             this.Bind();
             this.shader.SetUniform("use_gouraud", 1f);
-            this.shader.SetUniform("light_vector", light.Vector);
-            this.shader.SetUniform("light_color", light.Color);
+            this.SetDefaultLight(light);
             this.shader.SetUniform("shadow_bias", shadowBias);
             if (shadowMapTexture != null)
             {
@@ -703,8 +724,7 @@ void main(){
         {
             this.Bind();
             this.shader.SetUniform("use_phong", 1f);
-            this.shader.SetUniform("light_vector", light.Vector);
-            this.shader.SetUniform("light_color", light.Color);
+            this.SetDefaultLight(light);
             this.shader.SetUniform("ambient", ambientColor);
             this.shader.SetUniform("shininess", shininess);
             this.shader.SetUniform("shadow_bias", shadowBias);
@@ -729,8 +749,7 @@ void main(){
         {
             this.Bind();
             this.shader.SetUniform("use_phong", 1f);
-            this.shader.SetUniform("light_vector", light.Vector);
-            this.shader.SetUniform("light_color", light.Color);
+            this.SetDefaultLight(light);
             this.shader.SetUniform("ambient", ambientColor);
             this.shader.SetUniform("shadow_bias", shadowBias);
             if (shadowMapTexture != null)
@@ -756,14 +775,67 @@ void main(){
             this.ResetUniforms();
         }
 
+        public void DrawPhong(Material material)
+        {
+            this.Bind();
+            this.shader.SetUniform("use_phong", 1f);
+            this.shader.SetUniform("color", material.DiffuseColor);
+            int numLights = 0;
+            for (int i = 0; i < material.Lights.Length; i++)
+            {
+                if (material.Lights[i] != null)
+                {
+                    this.shader.SetUniform(string.Format("light_vector[{0}]", i), material.Lights[i].Vector);
+                    this.shader.SetUniform(string.Format("light_color[{0}]", i), material.Lights[i].Color);
+                    this.shader.SetUniform(string.Format("light_strength[{0}]", i), material.Lights[i].Strength);
+                    numLights++;
+                }
+            }
+            this.shader.SetUniform("num_lights", numLights);
+
+            if (material.Diffuse != null)
+            {
+                this.shader.SetUniform("use_texture", 1f);
+                material.Diffuse.Bind(0);
+                this.shader.SetUniform("tex", 0);
+            }
+            this.shader.SetUniform("ambient", material.Ambient);
+            this.shader.SetUniform("shadow_bias", material.ShadowBias);
+            if (material.ShadowMap != null)
+            {
+                this.shader.SetUniform("use_shadow_map", 1f);
+                material.ShadowMap.Bind(1);
+                this.shader.SetUniform("shadow_map_tex", 1);
+                this.shader.SetUniform("depth_vp", material.Lights[0].ShadowProjection);
+            }
+            if (material.SpecularMap != null)
+            {
+                this.shader.SetUniform("use_specular_map", 1f);
+                material.SpecularMap.Bind(2);
+                this.shader.SetUniform("specular_tex", 2);
+            }
+            if (material.NormalMap != null)
+            {
+                this.shader.SetUniform("use_normal_map", 1f);
+                material.NormalMap.Bind(3);
+                this.shader.SetUniform("normal_tex", 3);
+            }
+            if (material.EmissiveMap != null)
+            {
+                this.shader.SetUniform("use_emissive_map", 1f);
+                material.EmissiveMap.Bind(4);
+                this.shader.SetUniform("emissive_tex", 4);
+            }
+            this.Draw();
+            this.ResetUniforms();
+        }
+
         public void DrawCel(Texture texture, Light light, Vector3 ambientColor, float threshold = 0.75f, DepthTexture shadowMapTexture = null, float shadowBias = 0.005f, Texture normalMapTexture = null)
         {
             this.Bind();
             this.shader.SetUniform("use_cel", 1f);
-            this.shader.SetUniform("light_vector", light.Vector);
-            this.shader.SetUniform("light_color", light.Color);
+            this.SetDefaultLight(light);
             this.shader.SetUniform("ambient", ambientColor);
-            this.shader.SetUniform("shininess", 0f);
             this.shader.SetUniform("threshold", threshold);
             this.shader.SetUniform("shadow_bias", shadowBias);
             if (shadowMapTexture != null)
@@ -792,15 +864,30 @@ void main(){
             this.ResetUniforms();
         }
 
+        protected void SetDefaultLight(Light light)
+        {
+            this.shader.SetUniform("num_lights", 1f);
+            this.shader.SetUniform("light_vector[0]", light.Vector);
+            this.shader.SetUniform("light_color[0]", light.Color);
+            this.shader.SetUniform("light_strength[0]", light.Strength);
+        }
+
         public void ResetUniforms()
         {
             this.shader.SetUniform("use_gouraud", -1f);
             this.shader.SetUniform("use_phong", -1f);
             this.shader.SetUniform("use_cel", -1f);
             this.shader.SetUniform("use_depth", -1f);
+            this.shader.SetUniform("use_texture", -1f);
             this.shader.SetUniform("use_specular_map", -1f);
             this.shader.SetUniform("use_normal_map", -1f);
+            this.shader.SetUniform("use_emissive_map", -1f);
             this.shader.SetUniform("use_shadow_map", -1f);
+
+            this.shader.SetUniform("num_lights", 1f);
+
+            this.shader.SetUniform("shininess", 0f);
+            this.shader.SetUniform("color", Vector4.Zero);
         }
 
 

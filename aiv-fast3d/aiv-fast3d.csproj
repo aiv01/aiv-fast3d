@@ -40,6 +40,7 @@
     <Reference Include="aiv-fast2d">
       <HintPath>..\packages\Aiv.Fast2D.0.13.0\lib\net40\aiv-fast2d.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Mesh3.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="SkeletalAnimation.cs" />
     <Compile Include="Plane.cs" />
     <Compile Include="Sphere.cs" />
+    <Compile Include="Material.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />

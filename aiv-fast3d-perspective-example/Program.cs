@@ -353,8 +353,7 @@ namespace Aiv.Fast3D.Perspective.Example
                 foreach (Mesh3 item in tank)
                 {
                     item.Position3 = new Vector3(-10, 0, 20);
-                    item.DrawPhong(tankDiffuse, directionalLight, new Vector3(0.1f, 0.1f, 0.1f), tankSpecular, null, 0, tankNormal);
-
+                    item.DrawPhong(tankDiffuse, directionalLight, new Vector3(0.1f, 0.1f, 0.1f), tankSpecular, null, 0, window.GetKey(KeyCode.B) ? tankNormal : null);
                 }
 
                 plane.Position3 = new Vector3(-13, 5, 0);
