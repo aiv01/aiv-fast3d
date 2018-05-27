@@ -389,6 +389,7 @@ namespace Aiv.Fast3D.Perspective.Example
                 wall.EulerRotation3 += new Vector3(0, 30, 0) * window.deltaTime;
                 wall.DrawPhong(new Vector4(0.4f, 0.2f, 0, 1), directionalLight, new Vector3(0.2f, 0.2f, 0.2f), 0, null, 0, bricksNormal);
 
+                pointLight.Position = camera.Position3;
                 wall.Position3 = new Vector3(11, 3, 20);
                 wallMaterial.Shininess = window.GetKey(KeyCode.K) ? 0.7f : 0;
                 wall.DrawPhong(wallMaterial);
