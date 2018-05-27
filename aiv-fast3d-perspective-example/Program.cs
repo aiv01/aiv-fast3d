@@ -158,7 +158,7 @@ namespace Aiv.Fast3D.Perspective.Example
 
 
             Material wallMaterial = new Material();
-            wallMaterial.DiffuseColor = new Vector4(0.5f, 0.5f, 0.5f, 100);
+            wallMaterial.DiffuseColor = new Vector4(0.5f, 0.5f, 0.5f, 1);
             wallMaterial.EmissiveMap = logoAiv;
             wallMaterial.Lights[0] = directionalLight;
             wallMaterial.Lights[1] = pointLight;
