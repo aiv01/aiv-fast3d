@@ -26,6 +26,7 @@ uniform mat4 view;
 uniform mat4 depth_vp;
 
 uniform vec3 light_vector[8];
+uniform float light_strength[8];
 uniform int num_lights;
 
 
@@ -40,6 +41,7 @@ out vec2 uvout;
 out vec4 vertex_color;
 out vec3 normal_from_view;
 out vec3 light_direction[8];
+out float light_attenuation[8];
 out vec3 vertex_position;
 
 out float lambert;
@@ -88,10 +90,21 @@ void main(){
 			normal_from_view = normalize(mv * new_normal).xyz;
 		
             // compute the light in camera space
-            for(int i=0;i<int(num_lights + 0.1);i++)
+            for(int i=0;i<int(num_lights);i++)
             {
-                vec3 light_from_view = (view * vec4(light_vector[i], 0)).xyz;
-			    light_direction[i] = normalize(light_from_view);
+                if (light_strength[i] > 0.0)
+                {
+                    vec3 light_from_view = (view * normalize(vec4((model * new_vertex).xyz - light_vector[i], 0))).xyz;
+                    light_direction[i] = normalize(light_from_view);
+                    float light_distance = length((model * new_vertex).xyz - light_vector[i]);
+                    light_attenuation[i] = clamp(1.0 - (1.0/light_strength[i]) * min(light_distance, light_strength[i]), 0.0, 1.0);
+                }
+                else
+                {
+                    vec3 light_from_view = (view * vec4(light_vector[i], 0)).xyz;
+			        light_direction[i] = normalize(light_from_view);
+                    light_attenuation[i] = 1.0;
+                }
             }
 			vertex_position = (model * new_vertex).xyz;
 
@@ -153,6 +166,7 @@ out vec4 out_color;
 in vec4 shadow_position;
 
 in vec3 light_direction[8];
+in float light_attenuation[8];
 
 uniform vec3 light_color[8];
 uniform float light_strength[8];
@@ -204,8 +218,8 @@ void main(){
 
         vec3 light_multiplier = vec3(0, 0, 0);
 
-        // manage lights (hack num_lights value to avoid precision errors)
-        for(int i=0;i<int(num_lights + 0.1);i++)
+        // manage lights
+        for(int i=0;i<int(num_lights);i++)
         {
 		    float diffuse = clamp(dot(normal_eye, -light_direction[i]), 0.0, 1.0);
 
@@ -239,10 +253,13 @@ void main(){
 			    specular = pow(max(0.0, dot(vertex_to_camera, light_reflection)), specular_shininess);
 		    }
 	
-		    light_multiplier += light_color[i] * (diffuse + specular);
+            if (light_attenuation[i] > 0.001)
+            {
+		        light_multiplier += (light_color[i] * (diffuse + specular)) / light_attenuation[i];
+            }
         }
 
-        out_color = vec4(out_color.xyz * (light_multiplier + ambient) + ambient, out_color.w);
+        out_color = vec4(out_color.xyz * (light_multiplier + ambient), out_color.w);
 
         if (use_emissive_map > 0.0)
         {
@@ -258,6 +275,7 @@ void main(){
 				out_color = vec4(out_color.xyz * ambient * 0.5, out_color.w) ;
 			}
 		}
+
 	}
 }";
 
@@ -780,6 +798,7 @@ void main(){
             this.Bind();
             this.shader.SetUniform("use_phong", 1f);
             this.shader.SetUniform("color", material.DiffuseColor);
+            this.shader.SetUniform("shininess", material.Shininess);
             int numLights = 0;
             for (int i = 0; i < material.Lights.Length; i++)
             {
@@ -793,12 +812,6 @@ void main(){
             }
             this.shader.SetUniform("num_lights", numLights);
 
-            if (material.Diffuse != null)
-            {
-                this.shader.SetUniform("use_texture", 1f);
-                material.Diffuse.Bind(0);
-                this.shader.SetUniform("tex", 0);
-            }
             this.shader.SetUniform("ambient", material.Ambient);
             this.shader.SetUniform("shadow_bias", material.ShadowBias);
             if (material.ShadowMap != null)
@@ -826,7 +839,15 @@ void main(){
                 material.EmissiveMap.Bind(4);
                 this.shader.SetUniform("emissive_tex", 4);
             }
-            this.Draw();
+
+            if (material.Diffuse != null)
+            {
+                this.DrawTexture(material.Diffuse);
+            }
+            else
+            {
+                this.Draw();
+            }
             this.ResetUniforms();
         }
 
@@ -866,7 +887,7 @@ void main(){
 
         protected void SetDefaultLight(Light light)
         {
-            this.shader.SetUniform("num_lights", 1f);
+            this.shader.SetUniform("num_lights", 1);
             this.shader.SetUniform("light_vector[0]", light.Vector);
             this.shader.SetUniform("light_color[0]", light.Color);
             this.shader.SetUniform("light_strength[0]", light.Strength);
@@ -884,7 +905,7 @@ void main(){
             this.shader.SetUniform("use_emissive_map", -1f);
             this.shader.SetUniform("use_shadow_map", -1f);
 
-            this.shader.SetUniform("num_lights", 1f);
+            this.shader.SetUniform("num_lights", 1);
 
             this.shader.SetUniform("shininess", 0f);
             this.shader.SetUniform("color", Vector4.Zero);

@@ -57,6 +57,7 @@
     <Compile Include="Plane.cs" />
     <Compile Include="Sphere.cs" />
     <Compile Include="Material.cs" />
+    <Compile Include="PointLight.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Aiv.Fast2D;
 using Aiv.Fast3D;
 using OpenTK;
@@ -150,6 +146,28 @@ namespace Aiv.Fast3D.Perspective.Example
 
             Cube wall = new Cube();
             Texture bricksNormal = new Texture("Assets/normal_mapping_normal_map.png");
+
+            PointLight pointLight = new PointLight(new Vector3(11, 10, 20), 10f);
+            pointLight.Color = new Vector3(0, 1, 0);
+
+            PointLight pointLight2 = new PointLight(new Vector3(17, 3, 20), 10f);
+            pointLight2.Color = new Vector3(0, 0, 1);
+
+            PointLight pointLight3 = new PointLight(new Vector3(11, 3, 20), 2.2f);
+            pointLight3.Color = new Vector3(1, 0, 0);
+
+
+            Material wallMaterial = new Material();
+            wallMaterial.DiffuseColor = new Vector4(0.5f, 0.5f, 0.5f, 100);
+            wallMaterial.EmissiveMap = logoAiv;
+            wallMaterial.Lights[0] = directionalLight;
+            wallMaterial.Lights[1] = pointLight;
+            wallMaterial.Lights[2] = pointLight2;
+            wallMaterial.Lights[3] = pointLight3;
+            wallMaterial.NormalMap = bricksNormal;
+
+
+
 
             while (window.IsOpened)
             {
@@ -369,7 +387,12 @@ namespace Aiv.Fast3D.Perspective.Example
                 wall.Position3 = new Vector3(8, 3, 15);
                 wall.Scale3 = new Vector3(3, 3, 1);
                 wall.EulerRotation3 += new Vector3(0, 30, 0) * window.deltaTime;
-                wall.DrawPhong(new Vector4(1, 0, 0, 1), directionalLight, new Vector3(0.2f, 0.2f, 0.2f), 0, null, 0, bricksNormal);
+                wall.DrawPhong(new Vector4(0.4f, 0.2f, 0, 1), directionalLight, new Vector3(0.2f, 0.2f, 0.2f), 0, null, 0, bricksNormal);
+
+                wall.Position3 = new Vector3(11, 3, 20);
+                wallMaterial.Shininess = window.GetKey(KeyCode.K) ? 0.7f : 0;
+                wall.DrawPhong(wallMaterial);
+
 
                 logo.DrawTexture(logoAiv);
 
