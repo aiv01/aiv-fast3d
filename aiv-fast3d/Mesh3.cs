@@ -15,6 +15,15 @@ layout(location = 2) in vec4 vc;
 layout(location = 3) in vec3 vn;
 layout(location = 4) in vec3 vtgt;
 
+layout(location = 5) in ivec4 influences0;
+layout(location = 6) in ivec4 influences1;
+layout(location = 7) in vec4 weights0;
+layout(location = 8) in vec4 weights1;
+
+uniform float use_skeleton;
+
+uniform mat4 bones[80];
+
 uniform mat4 model;
 
 uniform mat4 mvp;
@@ -50,10 +59,38 @@ uniform float use_shadow_map;
 out vec4 shadow_position;
 out mat3 tbn;
 
+vec4 to_bone_space(vec4 v)
+{
+    if (use_skeleton < 0.1)
+    {
+        return v;
+    }
+    mat4 bones_matrix = bones[influences0.x] * weights0.x;
+    bones_matrix += bones[influences0.y] * weights0.y;
+    bones_matrix += bones[influences0.z] * weights0.z;
+    bones_matrix += bones[influences0.w] * weights0.w;
+    bones_matrix += bones[influences1.x] * weights1.x;
+    bones_matrix += bones[influences1.y] * weights1.y;
+    bones_matrix += bones[influences1.z] * weights1.z;
+    bones_matrix += bones[influences1.w] * weights1.x;
+
+    return bones_matrix * v;
+
+    /*vec4 vbone = (bones[influences0.x] * v) * weights0.x;
+    vbone += (bones[influences0.y] * v) * weights0.y;
+    vbone += (bones[influences0.z] * v) * weights0.z;
+    vbone += (bones[influences0.w] * v) * weights0.w;
+    vbone += (bones[influences1.x] * v) * weights1.x;
+    vbone += (bones[influences1.y] * v) * weights1.y;
+    vbone += (bones[influences1.z] * v) * weights1.z;
+    vbone += (bones[influences1.w] * v) * weights1.w;
+    return vbone;*/
+}
+
 void main(){
 
-		vec4 new_vertex = vec4(vertex.xyz, 1);
-		vec4 new_normal = vec4(vn.xyz, 0);
+		vec4 new_vertex = to_bone_space(vec4(vertex.xyz, 1));
+		vec4 new_normal = to_bone_space(vec4(vn.xyz, 0));
 
 
         uvout = uv;
@@ -198,6 +235,8 @@ void main(){
     }
     out_color += color;
 
+    float specular = 0;
+
 	if (use_gouraud > 0.0) {
 		out_color = vec4(out_color.xyz * light_color[0] * lambert, out_color.w);
 		if (use_shadow_map > 0.0) {
@@ -241,25 +280,22 @@ void main(){
 		    // direction from vertex to camera
 		    vec3 vertex_to_camera = normalize(camera_position - vertex_position);
 
+            
 		    float specular_shininess = shininess;
 
 		    if (use_specular_map > 0.0) {
-			    specular_shininess = texture(specular_tex, uvout).x;
+			    specular_shininess += texture(specular_tex, uvout).x;
 		    }
 
-		    float specular = 0;
-
-		    if (specular_shininess > 0.0) {
-			    specular = pow(max(0.0, dot(vertex_to_camera, light_reflection)), specular_shininess);
-		    }
+		    specular = pow(max(0.0, dot(vertex_to_camera, light_reflection)), 32) * specular_shininess;
 	
             if (light_attenuation[i] > 0.001)
             {
-		        light_multiplier += (light_color[i] * (diffuse + specular)) / light_attenuation[i];
+		        light_multiplier += (light_color[i] * diffuse) / light_attenuation[i];
             }
         }
 
-        out_color = vec4(out_color.xyz * (light_multiplier + ambient), out_color.w);
+        out_color = vec4(out_color.xyz * (light_multiplier + ambient) + specular, out_color.w);
 
         if (use_emissive_map > 0.0)
         {
@@ -412,8 +448,19 @@ void main(){
         public float[] vtgt;
         private int vtgtBufferId;
 
+        public int[] influences0;
+        private int influences0BufferId;
+        public int[] influences1;
+        private int influences1BufferId;
+
+        public float[] weights0;
+        private int weights0BufferId;
+        public float[] weights1;
+        private int weights1BufferId;
 
         public string Name;
+
+        public Bone[] Skeleton;
 
         public Mesh3() : base(simpleShader3, 3)
         {
@@ -425,12 +472,12 @@ void main(){
             Name = string.Empty;
 
             rotationModesMapping = new Dictionary<RotationMode, RotationFunc>();
-            rotationModesMapping[RotationMode.XYZ] = () => Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z);
-            rotationModesMapping[RotationMode.XZY] = () => Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y);
-            rotationModesMapping[RotationMode.YXZ] = () => Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z);
-            rotationModesMapping[RotationMode.YZX] = () => Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X);
-            rotationModesMapping[RotationMode.ZXY] = () => Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y);
-            rotationModesMapping[RotationMode.ZYX] = () => Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X);
+            rotationModesMapping[RotationMode.XYZ] = () => Matrix4.CreateRotationZ(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.Z);
+            rotationModesMapping[RotationMode.XZY] = () => Matrix4.CreateRotationY(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.Y);
+            rotationModesMapping[RotationMode.YXZ] = () => Matrix4.CreateRotationZ(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Z);
+            rotationModesMapping[RotationMode.YZX] = () => Matrix4.CreateRotationX(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.X);
+            rotationModesMapping[RotationMode.ZXY] = () => Matrix4.CreateRotationY(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Y);
+            rotationModesMapping[RotationMode.ZYX] = () => Matrix4.CreateRotationX(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.X);
 
 
             SetRotationMode(RotationMode.YZX);
@@ -440,6 +487,12 @@ void main(){
 
             this.vtgtBufferId = Graphics.NewBuffer();
             Graphics.MapBufferToArray(this.vtgtBufferId, 4, 3);
+
+            this.influences0BufferId = Graphics.NewBuffer();
+            this.influences1BufferId = Graphics.NewBuffer();
+            this.weights0BufferId = Graphics.NewBuffer();
+            this.weights1BufferId = Graphics.NewBuffer();
+
 
             // ensure normals are loaded
             this.shaderSetupHook += (mesh) =>
@@ -460,6 +513,15 @@ void main(){
                     ((Mesh3)mesh).UpdateTangents();
                 }
             };
+        }
+
+        public void RebuildSkeleton()
+        {
+            this.Bind();
+            Graphics.MapBufferToIntArray(this.influences0BufferId, 5, 4);
+            Graphics.MapBufferToIntArray(this.influences1BufferId, 6, 4);
+            Graphics.MapBufferToArray(this.weights0BufferId, 7, 4);
+            Graphics.MapBufferToArray(this.weights1BufferId, 8, 4);
         }
 
         public void RegenerateTangents()
@@ -526,6 +588,17 @@ void main(){
             if (this.vn == null)
                 return;
             Graphics.BufferData(this.vnBufferId, this.vn);
+        }
+
+        public void UpdateInfluencesAndWeights()
+        {
+            if (this.Skeleton == null)
+                return;
+            this.RebuildSkeleton();
+            Graphics.BufferData(this.influences0BufferId, this.influences0);
+            Graphics.BufferData(this.influences1BufferId, this.influences1);
+            Graphics.BufferData(this.weights0BufferId, this.weights0);
+            Graphics.BufferData(this.weights1BufferId, this.weights1);
         }
 
         public void UpdateTangents()
@@ -615,6 +688,17 @@ void main(){
 
             // pass the matrix to the shader
             this.shader.SetUniform("mvp", mvp);
+
+            if (Skeleton != null)
+            {
+                this.shader.SetUniform("use_skeleton", 1.0f);
+                for (int i = 0; i < Math.Min(Skeleton.Length, 80); i++)
+                {
+                    Matrix4 boneMatrix = Skeleton[i].BindPoseMatrix * Skeleton[i].GlobalMatrix;
+                    this.shader.SetUniform(string.Format("bones[{0}]", i), boneMatrix);
+                }
+
+            }
         }
 
         public void RegenerateNormals()
@@ -909,6 +993,8 @@ void main(){
 
             this.shader.SetUniform("shininess", 0f);
             this.shader.SetUniform("color", Vector4.Zero);
+
+            this.shader.SetUniform("use_skeleton", 0f);
         }
 
 

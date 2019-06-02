@@ -37,12 +37,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="OpenTK">
-      <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="aiv-fast2d">
-      <HintPath>..\packages\Aiv.Fast2D.0.14.0\lib\net40\aiv-fast2d.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -53,17 +47,9 @@
     <None Include="Assets\suzanne.obj">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="OpenTK.dll.config" />
-    <None Include="packages.config" />
     <None Include="Assets\Stormtrooper.obj">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\aiv-fast3d\aiv-fast3d.csproj">
-      <Project>{2d8853ff-da0f-4332-b371-32bbc8ebae7f}</Project>
-      <Name>aiv-fast3d</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\airadventurelevel1.png">
@@ -72,6 +58,20 @@
     <Content Include="Assets\Stormtrooper.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\aiv-fast3d\aiv-fast3d.csproj">
+      <Project>{2d8853ff-da0f-4332-b371-32bbc8ebae7f}</Project>
+      <Name>aiv-fast3d</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aiv.Fast2D">
+      <Version>0.15.5</Version>
+    </PackageReference>
+    <PackageReference Include="OpenTK">
+      <Version>2.0.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

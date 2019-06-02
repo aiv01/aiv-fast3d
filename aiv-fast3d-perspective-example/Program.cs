@@ -74,7 +74,7 @@ namespace Aiv.Fast3D.Perspective.Example
             }
             floor.UpdateUV();
 
-            Mesh3 stormTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
+            Mesh3 stormTrooper = SceneImporter.LoadMesh("Assets/Stormtrooper.obj", Vector3.One)[0];
 
             //stormTrooper.RegenerateNormals();
 
@@ -110,13 +110,13 @@ namespace Aiv.Fast3D.Perspective.Example
 
 
 
-            Mesh3 movingTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", Vector3.One)[0];
+            Mesh3 movingTrooper = SceneImporter.LoadMesh("Assets/Stormtrooper.obj", Vector3.One)[0];
             movingTrooper.Position3 = new Vector3(0, 0, 2);
 
 
             movingTrooper.SetParent(cube);
 
-            Mesh3[] tank = ObjLoader.Load("Assets/T34.obj", Vector3.One);
+            Mesh3[] tank = SceneImporter.LoadMesh("Assets/T34.obj", Vector3.One);
             foreach (var tankPart in tank)
             {
                 Console.WriteLine(tankPart);
@@ -124,6 +124,9 @@ namespace Aiv.Fast3D.Perspective.Example
             Texture tankDiffuse = new Texture("Assets/T-34.png");
             Texture tankSpecular = new Texture("Assets/T-34_S.png");
             Texture tankNormal = new Texture("Assets/T-34_N.png");
+
+
+            Mesh3[] ajParts = SceneImporter.LoadMesh("Assets/RunningMotion.fbx", new Vector3(0.03f));
 
 
 
@@ -315,6 +318,12 @@ namespace Aiv.Fast3D.Perspective.Example
                     item.DrawShadowMap(directionalLight);
                 }
 
+                foreach (Mesh3 ajPart in ajParts)
+                {
+                    ajPart.Position3 = new Vector3(-15, 0, 20) + shadowOffset;
+                    ajPart.DrawShadowMap(directionalLight);
+                }
+
                 window.DisableCullFaces();
                 window.RenderTo(null);
 
@@ -372,6 +381,12 @@ namespace Aiv.Fast3D.Perspective.Example
                 {
                     item.Position3 = new Vector3(-10, 0, 20);
                     item.DrawPhong(tankDiffuse, directionalLight, new Vector3(0.1f, 0.1f, 0.1f), tankSpecular, null, 0, window.GetKey(KeyCode.B) ? tankNormal : null);
+                }
+
+                foreach (Mesh3 ajPart in ajParts)
+                {
+                    ajPart.Position3 = new Vector3(-15, 0, 20) + shadowOffset;
+                    ajPart.DrawPhong(new Vector4(1, 1, 0, 1), directionalLight, new Vector3(0.1f, 0.1f, 0.1f));
                 }
 
                 plane.Position3 = new Vector3(-13, 5, 0);

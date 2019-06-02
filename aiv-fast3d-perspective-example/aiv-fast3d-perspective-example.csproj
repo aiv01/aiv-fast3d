@@ -35,13 +35,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="OpenTK">
-      <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="aiv-fast2d">
-      <HintPath>..\packages\Aiv.Fast2D.0.14.0\lib\net40\aiv-fast2d.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -54,6 +47,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Assets\crate.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Assets\RunningMotion.fbx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Assets\Stormtrooper.obj">
@@ -80,10 +76,7 @@
     <None Include="Assets\normal_mapping_normal_map.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="OpenTK.dll.config" />
-    <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="Assets\Stormtrooper.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -93,8 +86,16 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Aiv.Fast2D">
+      <Version>0.15.5</Version>
+    </PackageReference>
+    <PackageReference Include="OpenTK">
+      <Version>2.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\aiv-fast3d\aiv-fast3d.csproj">
-      <Project>{2D8853FF-DA0F-4332-B371-32BBC8EBAE7F}</Project>
+      <Project>{2d8853ff-da0f-4332-b371-32bbc8ebae7f}</Project>
       <Name>aiv-fast3d</Name>
     </ProjectReference>
   </ItemGroup>

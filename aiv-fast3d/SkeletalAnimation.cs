@@ -4,58 +4,73 @@ using OpenTK;
 
 namespace Aiv.Fast3D
 {
-	public class SkeletalAnimation
-	{
+    public class SkeletalAnimation
+    {
 
-		public class KeyFrame
-		{
-			public float Time;
-			public Vector3 Position;
-			public Quaternion Rotation;
-			public Vector3 Scale;
-		}
+        public class KeyFrame
+        {
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public Vector3 Scale;
+        }
 
-		private string name;
-		public string Name
-		{
-			get
-			{
-				return name;
-			}
-		}
+        private string name;
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+        }
 
-		private float fps;
-		public float Fps
-		{
-			get
-			{
-				return fps;
-			}
-		}
+        private float fps;
+        public float Fps
+        {
+            get
+            {
+                return fps;
+            }
+        }
 
-		public Dictionary<string, List<KeyFrame>> KeyFrames;
+        private int nFrames;
+        public int FramesCount
+        {
+            get
+            {
+                return nFrames;
+            }
+        }
 
-		public SkeletalAnimation(string name, float fps)
-		{
-			this.name = name;
-			this.fps = fps;
-			KeyFrames = new Dictionary<string, List<KeyFrame>>();
-		}
+        public float Duration
+        {
+            get
+            {
+                return (1.0f / this.fps) * nFrames;
+            }
+        }
 
-		public KeyFrame AddKeyFrame(string subject, float Time, Vector3 position, Quaternion rotation, Vector3 scale)
-		{
+        public Dictionary<string, KeyFrame[]> KeyFrames;
 
-			if (!KeyFrames.ContainsKey(subject))
-				KeyFrames[subject] = new List<KeyFrame>();
+        public SkeletalAnimation(string name, int nFrames, float fps)
+        {
+            this.name = name;
+            this.nFrames = nFrames;
+            this.fps = fps;
+            KeyFrames = new Dictionary<string, KeyFrame[]>();
+        }
 
-			KeyFrame keyFrame = new KeyFrame();
-			keyFrame.Time = Time;
-			keyFrame.Position = position;
-			keyFrame.Rotation = rotation;
-			keyFrame.Scale = scale;
+        public void SetKeyFrame(string subject, int frame, Vector3 position, Quaternion rotation, Vector3 scale)
+        {
 
-			KeyFrames[subject].Add(keyFrame);
-			return keyFrame;
-		}
-	}
+            if (!KeyFrames.ContainsKey(subject))
+                KeyFrames[subject] = new KeyFrame[this.nFrames];
+
+            KeyFrame keyFrame = new KeyFrame();
+            keyFrame.Position = position;
+            keyFrame.Rotation = rotation;
+            keyFrame.Scale = scale;
+
+            KeyFrames[subject][frame] = keyFrame;
+        }
+    }
 }

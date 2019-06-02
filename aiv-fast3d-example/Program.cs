@@ -28,7 +28,7 @@ namespace Aiv.Fast3D.Example
 
 			Mesh3 mesh3 = new Mesh3();
 
-			Mesh3 suzanne = ObjLoader.Load("Assets/suzanne.obj", new Vector3(50, -50, 50))[0];
+			Mesh3 suzanne = SceneImporter.LoadMesh("Assets/suzanne.obj", new Vector3(50, -50, 50))[0];
 			suzanne.Position3 = new Vector3(75, 100, 100);
 
 			suzanne.vc = new float[suzanne.v.Length / 3 * 4];
@@ -42,7 +42,7 @@ namespace Aiv.Fast3D.Example
 			}
 			suzanne.UpdateVertexColor();
 
-			Mesh3 stormTrooper = ObjLoader.Load("Assets/Stormtrooper.obj", new Vector3(50, -50, 50))[0];
+			Mesh3 stormTrooper = SceneImporter.LoadMesh("Assets/Stormtrooper.obj", new Vector3(50, -50, 50))[0];
 			stormTrooper.Position3 = new Vector3(200, 200, 100);
 
 			Texture texture = new Texture("Assets/Stormtrooper.png");
