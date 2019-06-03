@@ -472,12 +472,12 @@ void main(){
             Name = string.Empty;
 
             rotationModesMapping = new Dictionary<RotationMode, RotationFunc>();
-            rotationModesMapping[RotationMode.XYZ] = () => Matrix4.CreateRotationZ(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.Z);
-            rotationModesMapping[RotationMode.XZY] = () => Matrix4.CreateRotationY(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.Y);
-            rotationModesMapping[RotationMode.YXZ] = () => Matrix4.CreateRotationZ(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Z);
-            rotationModesMapping[RotationMode.YZX] = () => Matrix4.CreateRotationX(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.X);
-            rotationModesMapping[RotationMode.ZXY] = () => Matrix4.CreateRotationY(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Y);
-            rotationModesMapping[RotationMode.ZYX] = () => Matrix4.CreateRotationX(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.X);
+            rotationModesMapping[RotationMode.XYZ] = () => Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z);
+            rotationModesMapping[RotationMode.XZY] = () => Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y);
+            rotationModesMapping[RotationMode.YXZ] = () => Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationZ(internalRotation.Z);
+            rotationModesMapping[RotationMode.YZX] = () => Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X);
+            rotationModesMapping[RotationMode.ZXY] = () => Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationX(internalRotation.X) * Matrix4.CreateRotationY(internalRotation.Y);
+            rotationModesMapping[RotationMode.ZYX] = () => Matrix4.CreateRotationZ(internalRotation.Z) * Matrix4.CreateRotationY(internalRotation.Y) * Matrix4.CreateRotationX(internalRotation.X);
 
 
             SetRotationMode(RotationMode.YZX);
