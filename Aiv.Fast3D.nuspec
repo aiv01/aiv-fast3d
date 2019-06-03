@@ -16,6 +16,7 @@
     <dependencies>
       <dependency id="OpenTK" version="[2.0.0]" />
       <dependency id="Aiv.Fast2D" version="0.15.5" />
+      <dependency id="AssimpNet" version="[4.1.0]" />
     </dependencies>
   </metadata>
   <files>
