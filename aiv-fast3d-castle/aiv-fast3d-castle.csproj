@@ -33,9 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="aiv-fast2d, Version=1.0.6316.36395, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Aiv.Fast2D.0.11.1\lib\net40\aiv-fast2d.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="aiv-fast2d, Version=1.0.7092.29749, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Aiv.Fast2D.0.15.5\lib\net40\aiv-fast2d.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
