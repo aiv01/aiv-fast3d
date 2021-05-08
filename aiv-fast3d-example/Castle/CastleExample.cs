@@ -29,7 +29,7 @@ namespace Aiv.Fast3D.Example
             while (window.IsOpened)
             {
 
-                rot += 10 * window.deltaTime;
+                rot += 10 * window.DeltaTime;
 
                 foreach (Mesh3 mesh in meshes)
                 {

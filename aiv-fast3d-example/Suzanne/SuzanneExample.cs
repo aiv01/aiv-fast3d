@@ -14,7 +14,7 @@ namespace Aiv.Fast3D.Example
 		public static void Run()
 		{
 			Window window = new Window(1024, 768, "3D Suzanne Test");
-			window.SetDefaultOrthographicSize(10);
+			window.SetDefaultViewportOrthographicSize(10);
 			window.SetZNearZFar(-300, 300);
 
 			window.EnableDepthTest();
@@ -40,10 +40,10 @@ namespace Aiv.Fast3D.Example
 			suzanne.UpdateVertexColor();
 			
 
-			while (window.opened) {
+			while (window.IsOpened) {
 				suzanne.Draw();
 
-				suzanne.EulerRotation3 += new Vector3(0, 10, 0) * window.deltaTime;
+				suzanne.EulerRotation3 += new Vector3(0, 10, 0) * window.DeltaTime;
 				window.Update();
 			}
 		}

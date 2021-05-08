@@ -14,7 +14,7 @@ namespace Aiv.Fast3D.Example
 		public static void Run()
 		{
 			Window window = new Window(1024, 768, "3D Orthographic Test");
-			window.SetDefaultOrthographicSize(200);
+			window.SetDefaultViewportOrthographicSize(200);
 			window.SetZNearZFar(-300, 300);
 
 			window.EnableDepthTest();
@@ -117,21 +117,21 @@ namespace Aiv.Fast3D.Example
 			mesh3.Scale3 = new Vector3(0.5f, 0.5f, 0.5f);
 
 
-			while (window.opened)
+			while (window.IsOpened)
 			{
 				if (window.GetKey(KeyCode.Esc))
 					break;
 
 				if (window.GetKey(KeyCode.Up))
 				{
-					mesh3.EulerRotation3 += new Vector3(-20 * window.deltaTime, 0, 0);
-					suzanne.EulerRotation3 += new Vector3(0, -30 * window.deltaTime, 0);
-					stormTrooper.EulerRotation3 += new Vector3(0, 30 * window.deltaTime, 0);
+					mesh3.EulerRotation3 += new Vector3(-20 * window.DeltaTime, 0, 0);
+					suzanne.EulerRotation3 += new Vector3(0, -30 * window.DeltaTime, 0);
+					stormTrooper.EulerRotation3 += new Vector3(0, 30 * window.DeltaTime, 0);
 				}
 
 				mesh3.Position3 = new Vector3(130, 130, 100);
 				mesh3.Scale3 = new Vector3(0.5f, 0.5f, 0.5f);
-				mesh3.EulerRotation3 += new Vector3(0, -10 * window.deltaTime, 0);
+				mesh3.EulerRotation3 += new Vector3(0, -10 * window.DeltaTime, 0);
 
 				background.DrawTexture(backgroundTexture);
 

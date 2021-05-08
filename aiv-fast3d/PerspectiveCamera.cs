@@ -119,7 +119,7 @@ namespace Aiv.Fast3D
             this.aspectRatio = aspectRatio;
             if (this.aspectRatio == 0)
             {
-                this.aspectRatio = Window.Current.aspectRatio;
+                this.aspectRatio = Window.Current.CurrentViewportAspectRatio;
             }
         }
 

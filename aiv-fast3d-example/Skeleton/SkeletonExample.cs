@@ -26,7 +26,7 @@ namespace Aiv.Fast3D.Example
         {
 
             Window window = new Window(1024, 768, "Aiv.Fast3D Skeleton Test", false, 24, 0);
-            window.SetDefaultOrthographicSize(10);
+            window.SetDefaultViewportOrthographicSize(10);
 
             window.SetClearColor(new Vector4(0, 0, 1, 1));
 
@@ -80,7 +80,7 @@ namespace Aiv.Fast3D.Example
             {
 
                 if (window.GetKey(KeyCode.Space))
-                    rot += 1 * window.deltaTime;
+                    rot += 1 * window.DeltaTime;
 
 
                 diffuse.position = new Vector2(0, 0);
