@@ -226,7 +226,9 @@ void main(){
             out_color = color;
         }
         else {
-            out_color = vec4(0, 0, 0, 0);    
+            //see issue: https://github.com/aiv01/aiv-fast3d/issues/22
+            //out_color = vec4(0, 0, 0, 0);    
+            discard;
         }
         return;
     }
