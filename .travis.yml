@@ -9,7 +9,7 @@ notifications:
 before_script:
   - export AUTO_PATH_SLN=aiv-fast3d.sln
   - export AUTO_PATH_LIBR_REL=aiv-fast3d/bin/Release
-  - export AUTO_PATH_LIBR_DLL=$AUTO_PATH_LIBR_REL/aiv-fast2d.dll
+  - export AUTO_PATH_LIBR_DLL=$AUTO_PATH_LIBR_REL/aiv-fast3d.dll
   ##### - export AUTO_PATH_TEST_DLL=Tests/bin/Release/Tests.dll
   - export AUTO_PATH_NUSPEC=aiv-fast3d.nuspec
   - export AUTO_PATH_DOCS=auto-docs/html
