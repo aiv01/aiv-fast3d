@@ -7,9 +7,9 @@ using Aiv.Fast3D;
 using Aiv.Fast2D;
 using OpenTK;
 
-namespace Aiv.Fast3D.Skeleton.Example
+namespace Aiv.Fast3D.Example
 {
-    class Program
+    class SkeletonExample
     {
 
         static Bone FindBoneByName(Mesh3 mesh, string name)
@@ -22,11 +22,11 @@ namespace Aiv.Fast3D.Skeleton.Example
             return null;
         }
 
-        static void Main(string[] args)
+        public static void Run()
         {
 
             Window window = new Window(1024, 768, "Aiv.Fast3D Skeleton Test", false, 24, 0);
-            window.SetDefaultOrthographicSize(10);
+            window.SetDefaultViewportOrthographicSize(10);
 
             window.SetClearColor(new Vector4(0, 0, 1, 1));
 
@@ -34,13 +34,13 @@ namespace Aiv.Fast3D.Skeleton.Example
 
             PerspectiveCamera camera = new PerspectiveCamera(new Vector3(0, 3, 5), new Vector3(0, 180, 0), 90, 0.01f, 1000);
 
-            Mesh3[] aj = SceneImporter.LoadMesh("Assets/RunningMotion.fbx", new Vector3(0.03f));
+            Mesh3[] aj = SceneImporter.LoadMesh("Perspective/Assets/RunningMotion.fbx", new Vector3(0.03f));
 
             DirectionalLight light = new DirectionalLight(new Vector3(0, 0, -1));
 
-            Texture[] textures = SceneImporter.LoadTextures("Assets/RunningMotion.fbx");
+            Texture[] textures = SceneImporter.LoadTextures("Perspective/Assets/RunningMotion.fbx");
 
-            SkeletalAnimation[] animations = SceneImporter.LoadSkeletalAnimations("Assets/RunningMotion.fbx");
+            SkeletalAnimation[] animations = SceneImporter.LoadSkeletalAnimations("Perspective/Assets/RunningMotion.fbx");
 
             Material ajMaterial = new Material();
             ajMaterial.Ambient = new Vector3(0.1f);
@@ -80,7 +80,7 @@ namespace Aiv.Fast3D.Skeleton.Example
             {
 
                 if (window.GetKey(KeyCode.Space))
-                    rot += 1 * window.deltaTime;
+                    rot += 1 * window.DeltaTime;
 
 
                 diffuse.position = new Vector2(0, 0);

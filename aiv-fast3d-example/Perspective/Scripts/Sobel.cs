@@ -1,6 +1,6 @@
 ﻿using Aiv.Fast2D;
 
-namespace Aiv.Fast3D.Perspective.Example
+namespace Aiv.Fast3D.Example.Perspective
 {
 
 	public class Sobel : PostProcessingEffect

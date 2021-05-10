@@ -11,7 +11,7 @@
     <AssemblyName>aiv-fast3d-example</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -39,25 +39,82 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Castle\CastleExample.cs" />
+    <Compile Include="Orthographic\OrthographicExample.cs" />
+    <Compile Include="Perspective\PerspectiveExample.cs" />
+    <Compile Include="Perspective\Scripts\DepthViewer.cs" />
+    <Compile Include="Perspective\Scripts\Fog.cs" />
+    <Compile Include="Perspective\Scripts\FXAA.cs" />
+    <Compile Include="Perspective\Scripts\Sobel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Skeleton\SkeletonExample.cs" />
+    <Compile Include="Suzanne\SuzanneExample.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Assets\suzanne.obj">
+    <None Include="Castle\Assets\Castle.obj">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Assets\Stormtrooper.obj">
+    <None Include="Castle\Assets\millenium-falcon.obj">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Orthographic\Assets\suzanne.obj">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Orthographic\Assets\Stormtrooper.obj">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\RunningMotion.fbx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\Stormtrooper.obj">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\T34.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Skeleton\Assets\RunningMotion.fbx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Suzanne\Assets\suzanne.obj">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\airadventurelevel1.png">
+    <Content Include="Orthographic\Assets\airadventurelevel1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Stormtrooper.png">
+    <Content Include="Orthographic\Assets\Stormtrooper.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Perspective\Assets\Stormtrooper.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Perspective\Assets\world.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="Perspective\Assets\T-34_S.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\T-34_N.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\T-34.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\normal_mapping_normal_map.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\LogoAIV.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\floor.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Perspective\Assets\crate.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\aiv-fast3d\aiv-fast3d.csproj">
@@ -67,10 +124,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aiv.Fast2D">
-      <Version>0.15.5</Version>
+      <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="OpenTK">
-      <Version>2.0.0</Version>
+      <Version>3.2.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
